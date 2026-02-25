@@ -381,5 +381,3 @@ export default function QuizScreen() {
         </Pressable>
       </View>
     </SafeAreaView>
-  );
-}
