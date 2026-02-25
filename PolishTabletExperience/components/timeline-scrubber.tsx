@@ -1,0 +1,465 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+
+export type TimelineItem = {
+  id: string;
+  year: number;
+  label: string;
+  color?: string;
+};
+
+type TimelineScrubberProps = {
+  items: TimelineItem[];
+  initialIndex?: number;
+  maxGapYears?: number;
+  pixelsPerYear?: number;
+  minGapPixels?: number;
+  windowSpanYears?: number;
+  onSelect?: (item: TimelineItem, index: number) => void;
+};
+
+const TRACK_HORIZONTAL_PADDING = 96;
+const DOT_SIZE = 14;
+const YEAR_LABEL_WIDTH = 72;
+const DEFAULT_ERA_COLOR = '#5f8e3b';
+const PILL_WIDTH = 76;
+const BAR_TOP = 70; // moved down by another 10px (total 30px)
+const BAR_HEIGHT = 14;
+
+function buildPositions(
+  items: TimelineItem[],
+  pixelsPerYear: number,
+  maxGapYears: number,
+  minGapPixels: number
+) {
+  if (items.length === 0) {
+    return [];
+  }
+
+  const positions: number[] = [0];
+  for (let index = 1; index < items.length; index += 1) {
+    const yearGap = items[index].year - items[index - 1].year;
+    const effectiveGap = Math.min(Math.max(yearGap, 0), maxGapYears);
+    const proportionalGap = effectiveGap * pixelsPerYear;
+    const visualGap = yearGap > 0 ? minGapPixels + proportionalGap : 0;
+    positions.push(positions[index - 1] + visualGap);
+  }
+
+  return positions;
+}
+
+export function TimelineScrubber({
+  items,
+  initialIndex = 0,
+  maxGapYears = 40,
+  pixelsPerYear = 4.4,
+  minGapPixels = 18,
+  windowSpanYears = 75,
+  onSelect,
+}: TimelineScrubberProps) {
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(Math.min(initialIndex, Math.max(items.length - 1, 0)));
+  const [windowStartYear, setWindowStartYear] = useState(items[0]?.year ?? 0);
+
+  const positions = useMemo(
+    () => buildPositions(items, pixelsPerYear, maxGapYears, minGapPixels),
+    [items, maxGapYears, minGapPixels, pixelsPerYear]
+  );
+
+  const minYear = items[0]?.year ?? 0;
+  const maxYear = items[items.length - 1]?.year ?? 0;
+  const maxWindowStartYear = Math.max(maxYear - windowSpanYears, minYear);
+  const visibleStartYear = windowStartYear;
+  const visibleEndYear = windowStartYear + windowSpanYears;
+
+  const visibleIndices = useMemo(() => {
+    if (items.length === 0) {
+      return [];
+    }
+
+    const indices: number[] = [];
+    for (let index = 0; index < items.length; index += 1) {
+      const year = items[index].year;
+      if (year < visibleStartYear) {
+        continue;
+      }
+      if (year > visibleEndYear) {
+        break;
+      }
+      indices.push(index);
+    }
+
+    if (indices.length === 0) {
+      let nearestIndex = 0;
+      let nearestDistance = Number.POSITIVE_INFINITY;
+      for (let index = 0; index < items.length; index += 1) {
+        const distance = Math.abs(items[index].year - visibleStartYear);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
+        }
+      }
+      indices.push(nearestIndex);
+    }
+
+    return indices;
+  }, [items, visibleEndYear, visibleStartYear]);
+
+  const visibleStartIndex = visibleIndices[0] ?? 0;
+  const visibleEndIndex = visibleIndices[visibleIndices.length - 1] ?? 0;
+
+  const markerXByIndex = useMemo(() => {
+    const markerMap: Record<number, number> = {};
+
+    if (visibleIndices.length === 0 || containerWidth === 0 || positions.length === 0) {
+      return markerMap;
+    }
+
+    if (visibleIndices.length === 1) {
+      markerMap[visibleIndices[0]] = containerWidth / 2;
+      return markerMap;
+    }
+
+    const leftEdge = TRACK_HORIZONTAL_PADDING;
+    const rightEdge = Math.max(containerWidth - TRACK_HORIZONTAL_PADDING, leftEdge + 1);
+    const usableWidth = rightEdge - leftEdge;
+    const startPosition = positions[visibleStartIndex] ?? 0;
+    const endPosition = positions[visibleEndIndex] ?? startPosition;
+    const span = Math.max(endPosition - startPosition, 1);
+
+    visibleIndices.forEach((index) => {
+      const normalized = (positions[index] - startPosition) / span;
+      markerMap[index] = leftEdge + normalized * usableWidth;
+    });
+
+    return markerMap;
+  }, [containerWidth, positions, visibleEndIndex, visibleIndices, visibleStartIndex]);
+
+  const activeMarkerX = markerXByIndex[activeIndex] ?? containerWidth / 2;
+  const scrubberCenterX = useSharedValue(activeMarkerX);
+
+  const getNearestVisibleIndex = useCallback(
+    (touchX: number) => {
+      if (visibleIndices.length === 0) {
+        return activeIndex;
+      }
+
+      let nearest = visibleIndices[0];
+      let nearestDistance = Number.POSITIVE_INFINITY;
+
+      visibleIndices.forEach((index) => {
+        const markerX = markerXByIndex[index] ?? 0;
+        const distance = Math.abs(markerX - touchX);
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearest = index;
+        }
+      });
+
+      return nearest;
+    },
+    [activeIndex, markerXByIndex, visibleIndices]
+  );
+
+  const selectIndex = useCallback(
+    (nextIndex: number) => {
+      if (items.length === 0) {
+        return;
+      }
+
+      const boundedIndex = Math.min(Math.max(nextIndex, 0), items.length - 1);
+      setActiveIndex(boundedIndex);
+      onSelect?.(items[boundedIndex], boundedIndex);
+    },
+    [items, onSelect]
+  );
+
+  useEffect(() => {
+    if (items.length === 0) {
+      return;
+    }
+
+    const boundedInitial = Math.min(Math.max(initialIndex, 0), items.length - 1);
+    const initialYear = items[boundedInitial].year;
+    const initialWindowStartYear = Math.min(Math.max(initialYear, minYear), maxWindowStartYear);
+
+    setActiveIndex(boundedInitial);
+    setWindowStartYear(initialWindowStartYear);
+  }, [initialIndex, items, maxWindowStartYear, minYear]);
+
+  useEffect(() => {
+    const activeYear = items[activeIndex]?.year;
+    if (activeYear == null) {
+      return;
+    }
+
+    if (activeYear < windowStartYear) {
+      setWindowStartYear(Math.max(activeYear, minYear));
+      return;
+    }
+
+    if (activeYear > visibleEndYear) {
+      setWindowStartYear(Math.min(activeYear - windowSpanYears, maxWindowStartYear));
+    }
+  }, [activeIndex, items, maxWindowStartYear, minYear, visibleEndYear, windowSpanYears, windowStartYear]);
+
+  useEffect(() => {
+    if (containerWidth === 0) {
+      return;
+    }
+
+    scrubberCenterX.value = withTiming(activeMarkerX, {
+      duration: 180,
+      easing: Easing.out(Easing.cubic),
+    });
+  }, [activeMarkerX, containerWidth, scrubberCenterX]);
+
+  const activePillStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: scrubberCenterX.value - PILL_WIDTH / 2 }],
+    };
+  });
+
+  const panGesture = Gesture.Pan()
+    .runOnJS(true)
+    .onBegin((event) => {
+      const nextIndex = getNearestVisibleIndex(event.x);
+      selectIndex(nextIndex);
+    })
+    .onUpdate((event) => {
+      const nextIndex = getNearestVisibleIndex(event.x);
+      if (nextIndex !== activeIndex) {
+        selectIndex(nextIndex);
+      }
+    })
+    .onEnd((event) => {
+      const nextIndex = getNearestVisibleIndex(event.x);
+      selectIndex(nextIndex);
+    });
+
+  const onContainerLayout = (event: LayoutChangeEvent) => {
+    setContainerWidth(event.nativeEvent.layout.width);
+  };
+
+  const goToPrevious = () => {
+    const nextWindowStart = Math.max(windowStartYear - windowSpanYears, minYear);
+    setWindowStartYear(nextWindowStart);
+
+    const nextWindowEnd = nextWindowStart + windowSpanYears;
+    const firstVisibleInWindow = items.findIndex(
+      (item) => item.year >= nextWindowStart && item.year <= nextWindowEnd
+    );
+
+    if (firstVisibleInWindow >= 0) {
+      selectIndex(firstVisibleInWindow);
+    }
+  };
+
+  const goToNext = () => {
+    const nextWindowStart = Math.min(windowStartYear + windowSpanYears, maxWindowStartYear);
+    setWindowStartYear(nextWindowStart);
+
+    const nextWindowEnd = nextWindowStart + windowSpanYears;
+    const firstVisibleInWindow = items.findIndex(
+      (item) => item.year >= nextWindowStart && item.year <= nextWindowEnd
+    );
+
+    if (firstVisibleInWindow >= 0) {
+      selectIndex(firstVisibleInWindow);
+    }
+  };
+
+  const isPreviousDisabled = windowStartYear <= minYear;
+  const isNextDisabled = windowStartYear >= maxWindowStartYear;
+
+  return (
+    <View style={styles.root} onLayout={onContainerLayout}>
+      <Pressable
+        onPress={goToPrevious}
+        disabled={isPreviousDisabled}
+        hitSlop={10}
+        style={[styles.arrowButton, styles.leftArrow, isPreviousDisabled && styles.disabledArrow]}>
+        <Text style={styles.arrowText}>◀</Text>
+      </Pressable>
+
+      <Pressable
+        onPress={goToNext}
+        disabled={isNextDisabled}
+        hitSlop={10}
+        style={[styles.arrowButton, styles.rightArrow, isNextDisabled && styles.disabledArrow]}>
+        <Text style={styles.arrowText}>▶</Text>
+      </Pressable>
+
+      <GestureDetector gesture={panGesture}>
+        <View style={styles.gestureArea}>
+          <View style={styles.track}>
+            {visibleIndices.slice(1).map((currentIndex, visibleOffset) => {
+              const previousIndex = visibleIndices[visibleOffset] ?? currentIndex;
+              const segmentLeft = markerXByIndex[previousIndex] ?? TRACK_HORIZONTAL_PADDING;
+              const segmentRight = markerXByIndex[currentIndex] ?? segmentLeft;
+              const segmentWidth = Math.max(segmentRight - segmentLeft, 2);
+              const segmentColor =
+                items[currentIndex]?.color ?? items[previousIndex]?.color ?? DEFAULT_ERA_COLOR;
+
+              return (
+                <View
+                  key={`${items[currentIndex]?.id ?? currentIndex}-segment`}
+                  style={[
+                    styles.trackSegment,
+                    {
+                      left: segmentLeft,
+                      width: segmentWidth,
+                      backgroundColor: segmentColor,
+                    },
+                  ]}
+                />
+              );
+            })}
+
+            {visibleIndices.length === 1 ? (
+              <View
+                style={[
+                  styles.trackSegment,
+                  {
+                    left: markerXByIndex[visibleIndices[0]] ?? TRACK_HORIZONTAL_PADDING,
+                    width: 36,
+                    backgroundColor: items[visibleIndices[0]]?.color ?? DEFAULT_ERA_COLOR,
+                  },
+                ]}
+              />
+            ) : null}
+
+            {visibleIndices.map((index) => {
+              const item = items[index];
+              const markerLeft = markerXByIndex[index] ?? TRACK_HORIZONTAL_PADDING;
+              const isActive = index === activeIndex;
+              const showYearLabel = !isActive;
+
+              return (
+                <View key={item.id} style={[styles.marker, { left: markerLeft }]}> 
+                  <View style={[styles.dot, isActive ? styles.activeDot : styles.inactiveDot]} />
+                  {showYearLabel ? (
+                    <Text style={[styles.yearLabel, isActive && styles.activeYearLabel]}>{item.year}</Text>
+                  ) : null}
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      </GestureDetector>
+
+      <Animated.View style={[styles.activePill, activePillStyle]} pointerEvents="none">
+        <View
+          style={[
+            styles.activePillBackground,
+            { backgroundColor: items[activeIndex]?.color ?? DEFAULT_ERA_COLOR },
+          ]}>
+          <Text style={styles.activePillText}>{items[activeIndex]?.year}</Text>
+        </View>
+      </Animated.View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  root: {
+    height: 112,
+    justifyContent: 'flex-end',
+  },
+  gestureArea: {
+    height: 122, // increased by another 10px to match BAR_TOP move
+    overflow: 'hidden',
+  },
+  track: {
+    height: 122, // increased by another 10px to match BAR_TOP move
+  },
+  trackSegment: {
+    position: 'absolute',
+    top: BAR_TOP,
+    height: BAR_HEIGHT,
+    borderRadius: 7,
+  },
+  marker: {
+    position: 'absolute',
+    top: BAR_TOP,
+    width: 1,
+    alignItems: 'center',
+  },
+  dot: {
+    width: DOT_SIZE,
+    height: DOT_SIZE,
+    borderRadius: DOT_SIZE / 2,
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.7)',
+  },
+  activeDot: {
+    backgroundColor: '#ffffff',
+    borderWidth: 3,
+    borderColor: '#ffffff',
+  },
+  inactiveDot: {
+    opacity: 0.95,
+  },
+  yearLabel: {
+    marginTop: 10,
+    width: YEAR_LABEL_WIDTH,
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#515558',
+  },
+  activeYearLabel: {
+    fontWeight: '700',
+  },
+  activePill: {
+    position: 'absolute',
+    top: 51,
+    left: 0,
+  },
+  activePillBackground: {
+    width: PILL_WIDTH,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#f2e8b8',
+  },
+  activePillText: {
+    color: '#fff4d4',
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  arrowButton: {
+    position: 'absolute',
+    top: 39,
+    width: 52,
+    height: 52,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 15,
+  },
+  leftArrow: {
+    left: 8,
+  },
+  rightArrow: {
+    right: 8,
+  },
+  arrowText: {
+    color: '#42484a',
+    fontSize: 32,
+    fontWeight: '700',
+  },
+  disabledArrow: {
+    opacity: 0.35,
+  },
+});
