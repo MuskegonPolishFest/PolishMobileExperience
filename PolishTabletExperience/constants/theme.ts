@@ -1,53 +1,150 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * PolishTablet Experience – colors and typography definitions
+ * Based on the main colors, era colors, quiz result colors and typography definitions in the design draft.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+//Main colors definitions
+export const MainColors = {
+  pointRed: '#B01F1F',
+  disabledRed: '#DFB1AA',
+  primaryBlack: '#2E2A2A',
+  buttonBlack: '#444444',
+  textGrey: '#A9A9A9',
+  secondaryGrey: '#9D9D9D',
+  backgroundBeige: '#F2F0E6',
+  backgroundGrey: '#F0F0F0',
+} as const;
+
+// Era colors definitions
+export const EraColors = {
+  goldenAge: '#907618',
+  warsAndPartitions: '#588240',
+  independence: '#806FB8',
+  rebirth: '#917459',
+  wwii: '#537F9D',
+  communistPoland: '#A06B6A',
+  modern: '#4D8480',
+} as const;
+
+// Quiz result colors definitions
+export const QuizResultColors = {
+  educatorGold: '#9B5802',
+  writerBlue: '#4E6CD8',
+  crafterGreen: '#2F702F',
+  explorerRed: '#D83F19',
+} as const;
+
+// Light/Dark theme definitions
+const tintColorLight = MainColors.pointRed;
+const tintColorDark = MainColors.pointRed;
 
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: MainColors.primaryBlack,
+    background: MainColors.backgroundBeige,
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: MainColors.textGrey,
+    tabIconDefault: MainColors.textGrey,
     tabIconSelected: tintColorLight,
+    // Main colors shortcut reference
+    ...MainColors,
+    ...EraColors,
+    ...QuizResultColors,
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: MainColors.primaryBlack,
+    background: MainColors.backgroundBeige,
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: MainColors.textGrey,
+    tabIconDefault: MainColors.textGrey,
     tabIconSelected: tintColorDark,
+    ...MainColors,
+    ...EraColors,
+    ...QuizResultColors,
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
+// Font family definitions
+export const FontFamily = {
+  // H1, H2 - Khula-ExtraBold
+  khula: Platform.select({
+    ios: 'Khula-ExtraBold',
+    android: 'Khula-ExtraBold',
+    default: 'Khula-ExtraBold',
+    web: "'Khula', system-ui, sans-serif",
+  }),
+  // Body, Small, Button - Inter-Medium
+  interMedium: Platform.select({
+    ios: 'Inter-Medium',
+    android: 'Inter-Medium',
+    default: 'Inter-Medium',
+    web: "'Inter', system-ui, sans-serif",
+  }),
+  // H3, H4, H6 - Inter-Bold
+  interBold: Platform.select({
+    ios: 'Inter-Bold',
+    android: 'Inter-Bold',
+    default: 'Inter-Bold',
+    web: "'Inter', system-ui, sans-serif",
+  }),
+  // H5 - Inter-Black
+  interBlack: Platform.select({
+    ios: 'Inter-Black',
+    android: 'Inter-Black',
+    default: 'Inter-Black',
+    web: "'Inter', system-ui, sans-serif",
+  }),
+} as const;
+
+// Typography definitions
+export const Typography = {
+  h1: {
+    fontFamily: FontFamily.khula,
+    fontSize: 64,
+    lineHeight: Math.round(64 * 1.1), // 110%
   },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
+  h2: {
+    fontFamily: FontFamily.khula,
+    fontSize: 48,
+    lineHeight: Math.round(48 * 1.1),
   },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  h3: {
+    fontFamily: FontFamily.interBold,
+    fontSize: 36,
+    lineHeight: Math.round(36 * 1.4), // 140%
   },
-});
+  h4: {
+    fontFamily: FontFamily.interBold,
+    fontSize: 28,
+    lineHeight: Math.round(28 * 1.4),
+  },
+  h5: {
+    fontFamily: FontFamily.interBlack,
+    fontSize: 24,
+    lineHeight: Math.round(24 * 1.4),
+  },
+  h6: {
+    fontFamily: FontFamily.interBold,
+    fontSize: 18,
+    lineHeight: Math.round(18 * 1.4),
+  },
+  body: {
+    fontFamily: FontFamily.interMedium,
+    fontSize: 20,
+    lineHeight: Math.round(20 * 1.4),
+  },
+  small: {
+    fontFamily: FontFamily.interMedium,
+    fontSize: 15,
+    lineHeight: Math.round(15 * 1.4),
+  },
+  button: {
+    fontFamily: FontFamily.interMedium,
+    fontSize: 16,
+    lineHeight: Math.round(16 * 1.4),
+  },
+} as const;
+
+export type TypographyVariant = keyof typeof Typography;
