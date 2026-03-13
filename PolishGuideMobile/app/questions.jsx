@@ -144,13 +144,29 @@ function computeResult(answers) {
     counts[choiceKey] += weight;
   }
 
-  const order = ["A", "B", "C", "D"];
-  let best = "A";
-  for (const k of order) {
-    if (counts[k] > counts[best]) best = k;
+  const maxScore = Math.max(counts.A, counts.B, counts.C, counts.D);
+  const tiedLetters = Object.keys(counts).filter(
+    (letter) => counts[letter] === maxScore
+  );
+
+  if (tiedLetters.length === 1) {
+    const winner = tiedLetters[0];
+    return { letter: winner, ...TYPES[winner], counts };
   }
 
-  return { letter: best, ...TYPES[best], counts };
+  const finalAnswer = answers.find((a) => a.questionId === "achiever")?.choiceKey;
+
+  if (finalAnswer && tiedLetters.includes(finalAnswer)) {
+    return { letter: finalAnswer, ...TYPES[finalAnswer], counts };
+  }
+
+  // fallback only in case something unexpected happens
+  const fallbackOrder = ["A", "B", "C", "D"];
+  const fallbackWinner = fallbackOrder.find((letter) =>
+    tiedLetters.includes(letter)
+  );
+
+  return { letter: fallbackWinner, ...TYPES[fallbackWinner], counts };
 }
 
 function QuizStepper({ currentStep, totalSteps }) {
