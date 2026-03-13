@@ -143,7 +143,7 @@ export default function Index() {
               </Text> 
         </TouchableOpacity>
 
-        <RetryButton onPress={() => {}} />
+        <RetryButton />
 
     </ScrollView>
   );

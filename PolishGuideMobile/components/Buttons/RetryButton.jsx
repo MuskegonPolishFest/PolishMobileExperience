@@ -1,9 +1,21 @@
 import { Pressable, Text, StyleSheet} from "react-native";
+import { useRouter } from "expo-router";
 
-export default function NextButton({ onPress }) {
+export default function RetryButton({ onPress }) {
+    const router = useRouter();
+
+    function handlePress() {
+      if (onPress) {
+        onPress();
+        return;
+      }
+
+      router.replace("/questions");
+    }
+
     return (
       <Pressable 
-      onPress={onPress} 
+      onPress={handlePress} 
       style={({ pressed }) => [
         styles.button,
         pressed && { transform: [{ scale: 0.98 }], opacity: 0.85 },

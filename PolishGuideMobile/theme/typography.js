@@ -25,7 +25,7 @@ export const typography = {
   h2: {
     fontSize: 24,
     lineHeight: 29,
-    fontFamily: "Inter-Black",
+    fontFamily: "Inter-Bold",
     color: colors.text,
   },
 
