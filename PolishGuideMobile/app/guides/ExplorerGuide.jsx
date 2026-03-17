@@ -26,7 +26,7 @@ export default function Index() {
           style={{ width: 260, height: 260, marginTop: 40 }}
         />
         <Text style={[typography.p, { textAlign: "center", width: 320, marginTop: 20, }]}>
-        Based on your answers, your Polish history guide is <Text style={typography.pBold}>The Adventurer.</Text>
+        Based on your answers, your Polish history guide is <Text style={[typography.pBold, {color: "#D83F19" }]}>The Adventurer.</Text>
         </Text>
         <Text style={[typography.p, { textAlign: "center", width: 350, marginTop: 20, }]}>
         Navigate wartime Poland and witness acts of bravery, resistance, and
@@ -37,18 +37,15 @@ export default function Index() {
         <Text style={[typography.h3, { textAlign: "center", width: 360, marginTop: 50, color: "#D83F19" }]}>
           You May Like
         </Text>
-        <View style = {{width: 360, backgroundColor: colors.white, height: 48, borderRadius: 20, marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-          <Text style = {typography.p}> Stories of Survival</Text>
-        </View>
-        <View style = {{width: 360, backgroundColor: colors.white, height: 48, borderRadius: 20, marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-          <Text style = {typography.p}>Resistance & Underground Movements</Text>
-        </View>
+        <Text style={[typography.p, { textAlign: "center", width: 360, marginTop: 20 }]}>
+        <Text style= {[typography.pBold, {width: 300}]}>Please find a tablet </Text> 
+          and select your guide to begin exploring.
+  
+        Explore a selection of historical events you might find interesting.
+      </Text>
+ 
 
         {/* Historical Events */}
-        <Text style={[typography.h3, { textAlign: "center", width: 360, marginTop: 50, color: "#D83F19" }]}>
-        Historical events to explore
-        </Text>
-
         <View style = {{width: 360, backgroundColor: colors.white, height: 140, borderRadius: 20, marginTop: 30, alignItems: "center", justifyContent: "center" }}>
           <View style ={{width: 64, height: 42, backgroundColor: "#D83F19", borderRadius: 20, position: "absolute", top: -16, left: 0, alignItems: "center", justifyContent: "center"}}>
             <Text style = {[typography.pBold, {color: colors.white, textAlign: "center", width: 64}]}>1939</Text>

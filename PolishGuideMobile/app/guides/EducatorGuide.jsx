@@ -26,29 +26,26 @@ export default function Index() {
           style={{ width: 260, height: 260, marginTop: 40 }}
         />
         <Text style={[typography.p, { textAlign: "center", width: 320, marginTop: 20, }]}>
-        Based on your answers, your Polish history guide is <Text style={typography.pBold}>The Culture Buff .</Text>
+        Based on your answers, your Polish history guide is <Text style={[typography.pBold, {color: "#9B5802" }]}>The Culture Buff.</Text>
         </Text>
         <Text style={[typography.p, { textAlign: "center", width: 360, marginTop: 20, }]}>
         Explore how Poland flourished during this era, and how it led Europe
         through innovation, and by serving as a cultural hub that shaped the nation’s identity.
         </Text>
 
-        {/* You May Like */}
+        {/* What To Do Now */}
         <Text style={[typography.h3, { textAlign: "center", width: 360, marginTop: 50, color: "#9B5802" }]}>
-          You May Like
+        What To Do Now
         </Text>
-        <View style = {{width: 360, backgroundColor: colors.white, height: 48, borderRadius: 20, marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-          <Text style = {typography.p}>The Polish-Lithuanian Commonwealth</Text>
-        </View>
-        <View style = {{width: 360, backgroundColor: colors.white, height: 48, borderRadius: 20, marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-          <Text style = {typography.p}>Renaissance & Enlightenment</Text>
-        </View>
+        <Text style={[typography.p, { textAlign: "center", width: 360, marginTop: 20 }]}>
+        <Text style= {[typography.pBold, {width: 300}]}>Please find a tablet </Text> 
+          and select your guide to begin exploring.
+  
+        Explore a selection of historical events you might find interesting.
+      </Text>
+ 
 
         {/* Historical Events */}
-        <Text style={[typography.h3, { textAlign: "center", width: 360, marginTop: 50, color: "#9B5802" }]}>
-        Historical events to explore
-        </Text>
-
         <View style = {{width: 360, backgroundColor: colors.white, height: 140, borderRadius: 20, marginTop: 30, alignItems: "center", justifyContent: "center" }}>
           <View style ={{width: 64, height: 42, backgroundColor: "#9B5802", borderRadius: 20, position: "absolute", top: -16, left: 0, alignItems: "center", justifyContent: "center"}}>
             <Text style = {[typography.pBold, {color: colors.white, textAlign: "center", width: 64}]}>1635</Text>

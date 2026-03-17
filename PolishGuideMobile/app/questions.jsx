@@ -22,10 +22,26 @@ const TYPES = {
 };
 
 const GUIDE_ROUTE_BY_LETTER = {
-  A: "/guides/EducatorGuide",
-  B: "/guides/WriterGuide",
-  C: "/guides/CrafterGuide",
-  D: "/guides/ExplorerGuide",
+  A: {
+    guideName: "The Educator",
+    guideRoute: "/guides/EducatorGuide",
+    color: "#9B5802",
+  },
+  B: {
+    guideName: "The Writer",
+    guideRoute: "/guides/WriterGuide",
+    color: "#4E6CD8",
+  },
+  C: {
+    guideName: "The Crafter",
+    guideRoute: "/guides/CrafterGuide",
+    color: "#2F702F",
+  },
+  D: {
+    guideName: "The Explorer",
+    guideRoute: "/guides/ExplorerGuide",
+    color: "#D83F19",
+  },
 };
 
 const IMAGES = {
@@ -251,7 +267,16 @@ export default function QuizScreen() {
 
     const result = computeResult(finalAnswers);
     const route = GUIDE_ROUTE_BY_LETTER[result.letter] ?? "/guides/EducatorGuide";
-    router.push(route);
+    router.push(
+      {
+      pathname: "/guides/Congrats",
+      params: {
+        guideName: route.guideName,
+        guideRoute: route.guideRoute,
+        color: route.color,
+      },
+      }
+    );
   }
 
   function goBack() {
