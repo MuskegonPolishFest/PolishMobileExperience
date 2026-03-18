@@ -219,20 +219,12 @@ export default function TimelineScreen({ onPressContent,
         <View style={styles.mapArea}>
           <Image
             source={selectedEraMap}
-            style={styles.backgroundImage}
+            style={[styles.backgroundImage, { zIndex: 1 }]}
             contentFit="cover"
             contentPosition="right center"
             pointerEvents="none"
           />
 
-          <MapHotspot
-            top={500}
-            left={600}
-            iconSource={CULTURE_ICON}
-            imageSource={HOTSPOT_IMAGE}
-            isOpen={poiOpen}
-            onHotspotPress={() => setPoiOpen(!poiOpen)}
-          />
           <TouchableOpacity
             style={styles.homeButton}
             onPress={() => router.push('/modal')}
@@ -256,6 +248,15 @@ export default function TimelineScreen({ onPressContent,
 
             <Text style={styles.eraSummary}>{selectedEraDefinition.summary}</Text>
           </View>
+          <MapHotspot
+            top={500}
+            left={600}
+            iconSource={CULTURE_ICON}
+            imageSource={HOTSPOT_IMAGE}
+            isOpen={poiOpen}
+            onHotspotPress={() => setPoiOpen(!poiOpen)}
+            style={{ zIndex: 10, elevation: 10 }}
+          />
         </View>
 
         <View style={styles.bottomControls}>

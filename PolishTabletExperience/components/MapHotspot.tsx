@@ -9,6 +9,7 @@ type Props = {
   isOpen: boolean;
   onHotspotPress: () => void;
   onPopupPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
 export default function MapHotspot({
@@ -19,6 +20,7 @@ export default function MapHotspot({
   isOpen,
   onHotspotPress,
   onPopupPress,
+  style,
 }: Props) {
   return (
     <View style={[styles.container, { top, left }]}>
@@ -54,11 +56,15 @@ const styles = StyleSheet.create({
   container: {
     position: 'absolute',
     alignItems: 'center',
+    zIndex: 10,
+    elevation: 10,
   },
   popupWrapper: {
     position: 'absolute',
     bottom: 44,
     alignItems: 'center',
+    zIndex: 11,
+    elevation: 11,
   },
   popup: {
     width: 296,
