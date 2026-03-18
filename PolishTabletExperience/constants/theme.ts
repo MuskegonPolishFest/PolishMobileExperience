@@ -16,6 +16,7 @@ export const MainColors = {
   textGrey: '#A9A9A9',
   secondaryGrey: '#9D9D9D',
   backgroundBeige: '#F2F0E6',
+  backgroundGrey: '#F0F0F0',
 } as const;
 
 // Era colors definitions

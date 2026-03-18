@@ -100,15 +100,29 @@
 import TimelineScreen from '@/components/screens/timeline-screen';
 import ContentScreen from '@/screens/ContentScreen';
 import { useState } from 'react';
+import { EraKey } from '@/constants/contentData';
 
 type HomeView = 'timeline' | 'content';
 
 export default function IndexScreen() {
 	const [view, setView] = useState<HomeView>('timeline');
-
+	const [contentEra, setContentEra] = useState<EraKey>('all');
+	const [timelineYear, setTimelineYear] = useState<number>(1635);
 	if (view === 'content') {
-		return <ContentScreen onPressTimeline={() => setView('timeline')} />;
+		return (<ContentScreen initialEra={contentEra}
+			onPressTimeline={(year) => {
+			setTimelineYear(year);
+			setView('timeline');
+		}}  />);
 	}
 
-	return <TimelineScreen onPressContent={() => setView('content')} />;
+	return (
+		<TimelineScreen
+			initialYear={timelineYear}
+			onPressContent={(era) => {
+				setContentEra(era);
+				setView('content');
+			}}
+		/>
+	);
 }

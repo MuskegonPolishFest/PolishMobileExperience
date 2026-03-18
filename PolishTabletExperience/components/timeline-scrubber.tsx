@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { LayoutChangeEvent, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -26,12 +26,14 @@ type TimelineScrubberProps = {
 };
 
 const TRACK_HORIZONTAL_PADDING = 96;
-const DOT_SIZE = 14;
-const YEAR_LABEL_WIDTH = 72;
+const DOT_SIZE = 20;
+const YEAR_LABEL_WIDTH = 68;
 const DEFAULT_ERA_COLOR = '#5f8e3b';
 const PILL_WIDTH = 76;
-const BAR_TOP = 70; // moved down by another 10px (total 30px)
-const BAR_HEIGHT = 14;
+const BAR_TOP = 68;
+const BAR_HEIGHT = 20;
+const GESTURE_ACTIVE_TOP = BAR_TOP + 2;
+const GESTURE_ACTIVE_BOTTOM = BAR_TOP + DOT_SIZE + 4;
 
 function buildPositions(
   items: TimelineItem[],
@@ -67,6 +69,7 @@ export function TimelineScrubber({
   const [containerWidth, setContainerWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(Math.min(initialIndex, Math.max(items.length - 1, 0)));
   const [windowStartYear, setWindowStartYear] = useState(items[0]?.year ?? 0);
+  const canHandlePanRef = useRef(false);
 
   const positions = useMemo(
     () => buildPositions(items, pixelsPerYear, maxGapYears, minGapPixels),
@@ -230,18 +233,37 @@ export function TimelineScrubber({
   const panGesture = Gesture.Pan()
     .runOnJS(true)
     .onBegin((event) => {
+      const withinActiveBand =
+        event.y >= GESTURE_ACTIVE_TOP && event.y <= GESTURE_ACTIVE_BOTTOM;
+
+      canHandlePanRef.current = withinActiveBand;
+      if (!withinActiveBand) {
+        return;
+      }
+
       const nextIndex = getNearestVisibleIndex(event.x);
       selectIndex(nextIndex);
     })
     .onUpdate((event) => {
+      if (!canHandlePanRef.current) {
+        return;
+      }
+
       const nextIndex = getNearestVisibleIndex(event.x);
       if (nextIndex !== activeIndex) {
         selectIndex(nextIndex);
       }
     })
     .onEnd((event) => {
+      if (!canHandlePanRef.current) {
+        return;
+      }
+
       const nextIndex = getNearestVisibleIndex(event.x);
       selectIndex(nextIndex);
+    })
+    .onFinalize(() => {
+      canHandlePanRef.current = false;
     });
 
   const onContainerLayout = (event: LayoutChangeEvent) => {
@@ -409,10 +431,10 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
   yearLabel: {
-    marginTop: 10,
+    marginTop: 12,
     width: YEAR_LABEL_WIDTH,
     textAlign: 'center',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
     color: '#515558',
   },
@@ -421,7 +443,7 @@ const styles = StyleSheet.create({
   },
   activePill: {
     position: 'absolute',
-    top: 51,
+    top: 50,
     left: 0,
   },
   activePillBackground: {
@@ -436,7 +458,7 @@ const styles = StyleSheet.create({
   activePillText: {
     color: '#fff4d4',
     fontWeight: '700',
-    fontSize: 16,
+    fontSize: 20,
   },
   arrowButton: {
     position: 'absolute',
@@ -460,6 +482,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   disabledArrow: {
-    opacity: 0.35,
+    opacity: 0.25,
   },
 });
