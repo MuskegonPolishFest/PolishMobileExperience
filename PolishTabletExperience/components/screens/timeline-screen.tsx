@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
 import { FontFamily } from '@/constants/theme';
+import PoiButton from '../PoiButton';
 
 type EraDefinition = {
   name: string;
@@ -17,6 +18,7 @@ type EraDefinition = {
 
 type TimelineScreenProps = {
   onPressContent?: () => void;
+  initialYear?: number;
 };
 
 const ERA_DEFINITIONS: EraDefinition[] = [
@@ -111,9 +113,24 @@ function getEraBackgroundPosition(year: number) {
   return LATE_MAP_POSITION;
 }
 
-export default function TimelineScreen({ onPressContent }: TimelineScreenProps) {
+export default function TimelineScreen({ onPressContent, initialYear, }: TimelineScreenProps) {
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState(DEFAULT_INDEX);
+  const initialIndex = useMemo(() => {
+    if (initialYear != null && !Number.isNaN(initialYear)) {
+      const foundIndex = ERA_ITEMS.findIndex((item) => item.year === initialYear);
+      if (foundIndex >= 0) return foundIndex;
+    }
+
+    return DEFAULT_INDEX;
+  }, [initialYear]);
+
+  const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+
+  useEffect(() => {
+    setSelectedIndex(initialIndex);
+  }, [initialIndex]);
+
+
   const selectedEra = useMemo(() => ERA_ITEMS[selectedIndex] ?? ERA_ITEMS[0], [selectedIndex]);
   const selectedEraDefinition = ERA_BY_NAME[selectedEra.label] ?? {
     name: selectedEra.label,
@@ -141,12 +158,13 @@ export default function TimelineScreen({ onPressContent }: TimelineScreenProps) 
         <View style={styles.mapArea}>
           <TouchableOpacity
             style={styles.homeButton}
-            onPress={() => router.push('/modal')}
+            onPress={() => router.push('/GuideScreen')}
             activeOpacity={0.85}
           >
             <Text style={styles.homeGlyph}>⌂</Text>
           </TouchableOpacity>
 
+          <View style={{flexDirection: "column", gap: 20}}>
           <View style={styles.eraCard}>
             <Text style={[styles.eraYear, { color: selectedEra.color }]}>{selectedEra.year}</Text>
             <Text style={styles.eraName}>{selectedEraDefinition.name}</Text>
@@ -159,12 +177,16 @@ export default function TimelineScreen({ onPressContent }: TimelineScreenProps) 
               {selectedEraDefinition.summary}
             </Text>
           </View>
+          <PoiButton
+          description='Sample description for a point of interest related to the selected era. This could be a significant event, location, or figure that is relevant to the historical context.'
+          />
+          </View>
         </View>
 
         <View style={styles.timelinePanel}>
           <TimelineScrubber
             items={ERA_ITEMS}
-            initialIndex={DEFAULT_INDEX}
+            initialIndex={initialIndex}
             maxGapYears={40}
             pixelsPerYear={3.8}
             minGapPixels={20}
@@ -225,7 +247,8 @@ const styles = StyleSheet.create({
     marginTop: 24,
     padding: 16,
     borderRadius: 10,
-    backgroundColor: 'rgba(241, 241, 241, 0.94)',
+    // backgroundColor: 'rgba(241, 241, 241, 0.94)',
+    backgroundColor: '#ffffff',
   },
   eraYear: {
     fontSize: 52,
