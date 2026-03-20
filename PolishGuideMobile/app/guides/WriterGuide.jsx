@@ -80,9 +80,9 @@ export default function Index() {
         </View>
 
 
-        {/* Contents you can explore */}
+        {/* Take Home Content */}
         <Text style={[typography.h3, { textAlign: "center", width: 360, marginTop: 50, color: "#4E6CD8" }]}>
-        Contents you can explore        
+        Take Home Content         
         </Text>
         <Text style={[typography.p, { textAlign: "center", width: 350, marginTop: 10, marginBottom: 20, }]}>
         Click on the links below to explore more!
