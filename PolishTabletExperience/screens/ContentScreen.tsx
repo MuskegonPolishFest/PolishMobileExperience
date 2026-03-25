@@ -6,7 +6,12 @@ import { useRouter } from "expo-router";
 
 import EraTabBar from "../components/EraTabBar";
 import ContentCard from "../components/ContentCard";
-import { ERA_TABS, MOCK_CARDS, EraKey } from "../constants/contentData";
+import {
+  ERA_TABS,
+  MOCK_CARDS,
+  EraKey,
+  EARLIEST_TIMELINE_YEAR_BY_ERA,
+} from "../constants/contentData";
 
 import { ThemedText } from "@/components/themed-text";
 import { MainColors, EraColors } from "@/constants/theme";
@@ -19,17 +24,6 @@ type ColumnItem = {
 type ContentScreenProps = {
   onPressTimeline?: (year: number) => void;
   initialEra?: EraKey;
-};
-
-const earliestYearByEra: Record<EraKey, number> = {
-  all: 1635,
-  golden_age: 1635,
-  wars_partitions: 1686,
-  independence: 1804,
-  rebirth: 1914,
-  ww2: 1939,
-  communist: 1948,
-  modern: 1991,
 };
 
 export default function ContentScreen({ onPressTimeline,
@@ -74,7 +68,7 @@ export default function ContentScreen({ onPressTimeline,
     return result;
   }, [filteredCards]);
 
-  const targetYear = earliestYearByEra[selectedEra] ?? 1635;
+  const targetYear = EARLIEST_TIMELINE_YEAR_BY_ERA[selectedEra] ?? 1635;
 
   return (
     <View style={styles.container}>

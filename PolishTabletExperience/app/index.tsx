@@ -100,14 +100,35 @@
 import TimelineScreen from '@/components/screens/timeline-screen';
 import ContentScreen from '@/screens/ContentScreen';
 import { EraKey } from '@/constants/contentData';
-import { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 type HomeView = 'timeline' | 'content';
 
+function paramFirst(value: string | string[] | undefined): string | undefined {
+	if (value == null) return undefined;
+	if (Array.isArray(value)) return value[0];
+	return value;
+}
+
 export default function IndexScreen() {
+	const router = useRouter();
+	const params = useLocalSearchParams<{ openTimelineAtYear?: string | string[] }>();
 	const [view, setView] = useState<HomeView>('timeline');
 	const [contentEra, setContentEra] = useState<EraKey>('all');
 	const [timelineYear, setTimelineYear] = useState<number>(1635);
+
+	useEffect(() => {
+		const y = paramFirst(params.openTimelineAtYear);
+		if (y == null || y === '') return;
+		const num = Number(y);
+		if (Number.isNaN(num)) return;
+		setTimelineYear(num);
+		setView('timeline');
+		queueMicrotask(() => {
+			router.setParams({ openTimelineAtYear: undefined });
+		});
+	}, [params.openTimelineAtYear, router]);
 	if (view === 'content') {
 		return (<ContentScreen initialEra={contentEra}
 			onPressTimeline={(year) => {

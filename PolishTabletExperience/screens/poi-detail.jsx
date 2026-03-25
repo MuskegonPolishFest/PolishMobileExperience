@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { MainColors, Typography } from '@/constants/theme';
-import { POI_DETAILS } from '../constants/contentData';
+import { POI_DETAILS, EARLIEST_TIMELINE_YEAR_BY_ERA } from '../constants/contentData';
 
 function BackIcon({ size = 28, color = '#1C1B1F' }) {
   return (
@@ -18,6 +18,19 @@ function BackIcon({ size = 28, color = '#1C1B1F' }) {
       <Path
         d="M27.0837 36.6666L10.417 19.9999L27.0837 3.33325L29.6253 5.90283L15.5282 19.9999L29.6253 34.097L27.0837 36.6666Z"
         fill={color}
+      />
+    </Svg>
+  );
+}
+
+function CloseIcon({ size = 28, color = '#1C1B1F' }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M6 6L18 18M18 6L6 18"
+        stroke={color}
+        strokeWidth={2.5}
+        strokeLinecap="round"
       />
     </Svg>
   );
@@ -64,6 +77,20 @@ export default function POIDetailScreen() {
     router.back();
   };
 
+  /** Close (×): leave detail and open the timeline map for this POI’s primary era. */
+  const handleClose = () => {
+    const primaryEra = mainPoi.eraKeys?.[0];
+    const year = primaryEra
+      ? EARLIEST_TIMELINE_YEAR_BY_ERA[primaryEra]
+      : EARLIEST_TIMELINE_YEAR_BY_ERA.all;
+    router.replace({
+      pathname: '/',
+      params: {
+        openTimelineAtYear: String(year),
+      },
+    });
+  };
+
   const relatedPois =
     (mainPoi.relatedIds || [])
       .map((id) => {
@@ -93,6 +120,15 @@ export default function POIDetailScreen() {
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           <BackIcon />
+        </TouchableOpacity>
+        <View style={styles.headerSpacer} />
+        <TouchableOpacity
+          onPress={handleClose}
+          style={styles.closeButton}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          accessibilityLabel="Close"
+        >
+          <CloseIcon />
         </TouchableOpacity>
       </View>
 
@@ -164,7 +200,13 @@ const styles = StyleSheet.create({
     paddingTop: 56,
     paddingBottom: 12,
   },
+  headerSpacer: {
+    flex: 1,
+  },
   backButton: {
+    padding: 4,
+  },
+  closeButton: {
     padding: 4,
   },
   scroll: {
