@@ -5,7 +5,7 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
-import { FontFamily } from '@/constants/theme';
+import { FontFamily, MainColors } from '@/constants/theme';
 import { EraKey } from '@/constants/contentData';
 
 const HOME_ICON = require('@/assets/General_Icons/ Home_icon.svg');
@@ -123,6 +123,7 @@ const MAP_1991 = require('@/assets/maps_svg/1991.svg');
 const MAP_1993 = require('@/assets/maps_svg/1993, 2002, 2011.svg');
 
 const RIGHT_ALIGNED_MAP_POSITION = { right: 0, top: '32%' };
+const LEFT_BACKGROUND_VECTOR = require('@/assets/maps_svg/background-vector.svg');
 
 const CULTURE_ICON = require('@/assets/POI_Icon/POI_Culture.svg');
 const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
@@ -234,6 +235,11 @@ export default function TimelineScreen({
     <View style={styles.screen}>
       <SafeAreaView style={styles.container}>
         <View style={styles.mapArea}>
+          <View style={styles.leftLandWaterLayer} pointerEvents="none">
+            <View style={styles.leftLandFill} />
+            <Image source={LEFT_BACKGROUND_VECTOR} style={styles.leftVectorImage} contentFit="fill" />
+          </View>
+
           <Image
             source={selectedEraMap}
             style={[styles.backgroundImage, { zIndex: 1 }]}
@@ -303,7 +309,7 @@ export default function TimelineScreen({
             <TimelineScrubber
               key={`timeline-${initialYear}`}
               items={ERA_ITEMS}
-              initialIndex={getIndexFromYear(initialYear)}
+              initialIndex={initialYear != null ? getIndexFromYear(initialYear) : DEFAULT_INDEX}
               maxGapYears={40}
               pixelsPerYear={3.8}
               minGapPixels={20}
@@ -319,11 +325,12 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#D3DCCD',
-    paddingBottom: 5,
+    paddingBottom: 0,
   },
 
   container: {
     flex: 1,
+    backgroundColor: '#D3DCCD',
   },
 
   mapArea: {
@@ -341,6 +348,29 @@ backgroundImage: {
   bottom: 0,
   left: '41%',
   zIndex: 1,
+},
+
+leftLandWaterLayer: {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  bottom: 0,
+  width: '44%',
+  zIndex: 0,
+  overflow: 'hidden',
+},
+
+leftLandFill: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: '#D3DCCD',
+},
+
+leftVectorImage: {
+  position: 'absolute',
+  top: -170,
+  left: 0,
+  right: 0,
+  height: '80%',
 },
 
   homeButton: {
@@ -396,8 +426,9 @@ backgroundImage: {
   },
 
   bottomControls: {
-  zIndex: 5,
-},
+    zIndex: 5,
+    backgroundColor: '#D3DCCD',
+  },
 
 bottomToggleContainer: {
   position: 'absolute',
@@ -406,7 +437,6 @@ bottomToggleContainer: {
   zIndex: 20,
 },
 
-  // 🎨 MODIFIED: 完全照 Content page
   toggleWrapper: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -414,14 +444,12 @@ bottomToggleContainer: {
     padding: 2,
   },
 
-  // 🎨 MODIFIED: 去掉 minWidth，padding 改成和 Content page 一样
   inactiveToggle: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 40,
   },
 
-  // 🎨 MODIFIED: 去掉 minWidth，padding 改成和 Content page 一样
   activeToggle: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -443,10 +471,10 @@ bottomToggleContainer: {
     fontFamily: FontFamily.interMedium,
   },
 
-  // 🧱 MODIFIED: timeline 在最上层显示
   timelinePanel: {
-  height: 88,
-  justifyContent: 'flex-end',
-  zIndex: 10,
-},
+    height: 88,
+    justifyContent: 'flex-end',
+    zIndex: 10,
+    backgroundColor: '#D3DCCD',
+  },
 });
