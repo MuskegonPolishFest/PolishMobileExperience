@@ -19,6 +19,7 @@ type EraDefinition = {
   timeframe: string;
   years: number[];
   color: string;
+  borderExplanation?: string;
 };
 
 type TimelineScreenProps = {
@@ -155,6 +156,44 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1993, source: MAP_1993 },
 ];
 
+const BORDER_CHANGE_BY_YEAR: Record<number, string> = {
+  1635: 'Sweden signed the Treaty of Stuhmsdorf, returning territories to the Polish–Lithuanian Commonwealth.',
+  1653: 'Internal conflicts and wars begin, marking the decline of Poland’s strength.',
+  1686: 'Eternal Peace Treaty confirmed Russias control over Left-bank Ukraine.',
+  1699: 'Treaty of Karlowitz returned remaining Podolia to Poland.',
+  1721: 'Poland loses more control as its neighbors gain power.',
+  1742: 'Poland’s economy and military decline further.',
+  1772: 'First Partition divided 30% of Poland among Russia, Prussia, and Austria.',
+  1792: 'Poland fights Russia to protect its new constitution but loses.',
+  1793: 'Second Partition saw more land lost to Russia and Prussia.',
+  1795: 'Third Partition erased Poland from the map.',
+  1804: 'Napoleon’s rise gives Poles hope for independence.',
+  1807: 'Duchy of Warsaw created by Napoleon from former Polish lands.',
+  1815: 'Congress of Vienna split Duchy of Warsaw between Prussia and Russia.',
+  1831: 'Congress Poland lost autonomy after the November Uprising.',
+  1846: 'Free City of Cracow annexed by Austria.',
+  1848: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
+  1862: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
+  1867: 'Austria grants some autonomy to the Polish region of Galicia.',
+  1871: 'Germany is united, increasing pressure on Polish culture.',
+  1878: 'Polish nationalism and independence movements grow.',
+  1914: 'WWI begins – Poland’s land is controlled by Germany, Russia, and Austro-Hungary.',
+  1917: 'The Russian Revolution brings hope for Polish independence.',
+  1918: 'Poland declared independence and began reclaiming territory.',
+  1919: 'Treaty of Versailles recreated Poland with lands from Germany.',
+  1920: 'Poland gained Danzig access and seized East Galicia from ZUNR.',
+  1922: 'Central Lithuania joined Poland finalizing eastern borders.',
+  1938: 'Poland annexed Trans-Olza and parts of Slovak Czechoslovakia.',
+  1939: 'Germany and USSR partitioned Poland in WWII.',
+  1940: 'Poland is divided between Nazi Germany and the Soviet Union.',
+  1944: 'Warsaw Uprising – A major rebellion against German rule fails.',
+  1945: 'Post-WWII borders shifted west; eastern lands annexed by USSR.',
+  1948: 'Minor border adjustment near Przemyśl with USSR.',
+  1991: 'Communism ends – Poland becomes a democracy.',
+  1993: 'The last Soviet troops leave Poland.',
+};
+
+
 function getEraBackgroundMap(year: number) {
   for (let index = MAP_BY_FLOOR_YEAR.length - 1; index >= 0; index -= 1) {
     if (year >= MAP_BY_FLOOR_YEAR[index].startYear) {
@@ -191,6 +230,7 @@ function getIndexFromYear(year: number) {
   return foundIndex >= 0 ? foundIndex : DEFAULT_INDEX;
 }
 
+
 export default function TimelineScreen({
   onPressContent,
   initialYear,
@@ -208,6 +248,9 @@ export default function TimelineScreen({
 
 
     const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+    const currentItem = ERA_ITEMS[selectedIndex] ?? ERA_ITEMS[0];
+    const borderDescription =
+      BORDER_CHANGE_BY_YEAR[currentItem.year] ?? 'No explanation available yet.';
   
     useEffect(() => {
       setSelectedIndex(initialIndex);
@@ -267,7 +310,7 @@ export default function TimelineScreen({
               <Text style={styles.eraSummary}>{selectedEraDefinition.summary}</Text>
             </View>
             <PoiButton
-              description='This is a sample description text for the point of interest. It can be multiple lines long and provides more details about the hotspot.'
+            description={borderDescription}
               />
           </View>
             <MapHotspot
