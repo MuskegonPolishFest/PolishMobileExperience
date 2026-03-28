@@ -312,15 +312,15 @@ export default function TimelineScreen({
                   onHotspotPress={() =>
                     setOpenPoiId((current) => (current === poi.id ? null : poi.id))
                   }
-                  onPopupPress={() => {
-                    console.log('Open detail page for', poi.id);
-                  }} //change this to navigate to the detail screen for the POI
                   // onPopupPress={() => {
-                  //   router.push({
-                  //     pathname: '/poi-detail',
-                  //     params: { id: poi.id },
-                  //   });
-                  // }}
+                  //   console.log('Open detail page for', poi.id);
+                  // }} //change this to navigate to the detail screen for the POI
+                  onPopupPress={() => {
+                    router.push({
+                      pathname: '/poi-detail',
+                      params: { id: poi.id },
+                    });
+                  }}
                   titleTop={poi.titleTop}
                   yearLabel={poi.yearLabel}
                   description={poi.summary ?? poi.description}
