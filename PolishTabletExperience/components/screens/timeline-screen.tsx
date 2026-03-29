@@ -6,12 +6,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
 import { FontFamily, MainColors } from '@/constants/theme';
-import { EraKey } from '@/constants/contentData';
+import { EraKey, POI_DETAILS } from '@/constants/contentData';
+import { HOTSPOT_POSITIONS } from '@/constants/hotspotPositions';
 
 const HOME_ICON = require('@/assets/General_Icons/ Home_icon.svg');
 
 import MapHotspot from '@/components/MapHotspot';
 import PoiButton from '../PoiButton';
+
 
 type EraDefinition = {
   name: string;
@@ -126,7 +128,13 @@ const RIGHT_ALIGNED_MAP_POSITION = { right: 0, top: '32%' };
 const LEFT_BACKGROUND_VECTOR = require('@/assets/maps_svg/background-vector.svg');
 
 const CULTURE_ICON = require('@/assets/POI_Icon/POI_Culture.svg');
-const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
+// const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
+const HOTSPOT_ICONS = {
+  culture: require('@/assets/POI_Icon/POI_Culture.svg'),
+  biography: require('@/assets/POI_Icon/POI_Biography.svg'),
+  history: require('@/assets/POI_Icon/POI_History.svg'),
+  science: require('@/assets/POI_Icon/POI_Science.svg'),
+};
 
 const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1635, source: MAP_1635 },
@@ -227,9 +235,20 @@ export default function TimelineScreen({
   const selectedEraMap = useMemo(() => getEraBackgroundMap(selectedEra.year), [selectedEra.year]);
 
   const targetEraKey = getEraKeyFromLabel(selectedEra.label);
+  
+  const visibleHotspots = useMemo(() => {
+    if (targetEraKey === 'all') return [];
 
-  const [poiOpen, setPoiOpen] = useState(false);
+    return Object.values(POI_DETAILS).filter((poi) =>
+      poi.eraKeys.includes(targetEraKey)
+    );
+  }, [targetEraKey]);
 
+  const [openPoiId, setOpenPoiId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setOpenPoiId(null);
+  }, [selectedEra.year]);
 
   return (
     <View style={styles.screen}>
@@ -276,18 +295,41 @@ export default function TimelineScreen({
               description='This is a sample description text for the point of interest. It can be multiple lines long and provides more details about the hotspot.'
               />
           </View>
-            <MapHotspot
-            top={500}
-            left={600}
-            iconSource={CULTURE_ICON}
-            imageSource={HOTSPOT_IMAGE}
-            isOpen={poiOpen}
-            onHotspotPress={() => setPoiOpen(!poiOpen)}
-            style={{ zIndex: 10, elevation: 10 }}
-            />
-  
-        </View>
-  
+            {visibleHotspots.map((poi) => {
+              const position = HOTSPOT_POSITIONS[poi.id];
+
+              if (!position || !poi.mainImage) return null;
+
+              return (
+                <MapHotspot
+                  key={poi.id}
+                  top={position.top}
+                  left={position.left}
+                  iconSource={CULTURE_ICON}
+                  // iconSource={HOTSPOT_ICONS[poi.iconType]}
+                  imageSource={poi.mainImage}
+                  isOpen={openPoiId === poi.id}
+                  onHotspotPress={() =>
+                    setOpenPoiId((current) => (current === poi.id ? null : poi.id))
+                  }
+                  // onPopupPress={() => {
+                  //   console.log('Open detail page for', poi.id);
+                  // }} //change this to navigate to the detail screen for the POI
+                  onPopupPress={() => {
+                    router.push({
+                      pathname: '/poi-detail',
+                      params: { id: poi.id },
+                    });
+                  }}
+                  titleTop={poi.titleTop}
+                  yearLabel={poi.yearLabel}
+                  description={poi.summary ?? poi.description}
+                  style={{ zIndex: 10, elevation: 10 }}
+                />
+              );
+            })}
+
+          </View>
         <View style={styles.bottomControls}>
           <View style={styles.bottomToggleContainer}>
             <View style={styles.toggleWrapper}>
@@ -334,44 +376,44 @@ const styles = StyleSheet.create({
   },
 
   mapArea: {
-  flex: 1,
-  paddingHorizontal: 28,
-  paddingTop: 18,
-  overflow: 'hidden',
-  zIndex: 1,
-},
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 18,
+    overflow: 'hidden',
+    zIndex: 1,
+  },
 
-backgroundImage: {
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: '41%',
-  zIndex: 1,
-},
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: '41%',
+    zIndex: 1,
+  },
 
-leftLandWaterLayer: {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  bottom: 0,
-  width: '44%',
-  zIndex: 0,
-  overflow: 'hidden',
-},
+  leftLandWaterLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: '44%',
+    zIndex: 0,
+    overflow: 'hidden',
+  },
 
-leftLandFill: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: '#D3DCCD',
-},
+  leftLandFill: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#D3DCCD',
+  },
 
-leftVectorImage: {
-  position: 'absolute',
-  top: -170,
-  left: 0,
-  right: 0,
-  height: '80%',
-},
+  leftVectorImage: {
+    position: 'absolute',
+    top: -170,
+    left: 0,
+    right: 0,
+    height: '80%',
+  },
 
   homeButton: {
     width: 52,
@@ -430,12 +472,12 @@ leftVectorImage: {
     backgroundColor: '#D3DCCD',
   },
 
-bottomToggleContainer: {
-  position: 'absolute',
-  left: 20,
-  bottom: 92,
-  zIndex: 20,
-},
+  bottomToggleContainer: {
+    position: 'absolute',
+    left: 20,
+    bottom: 92,
+    zIndex: 20,
+  },
 
   toggleWrapper: {
     flexDirection: 'row',
