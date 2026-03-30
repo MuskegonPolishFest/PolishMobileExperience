@@ -32,50 +32,85 @@ const ERA_DEFINITIONS: EraDefinition[] = [
   {
     name: 'The Golden Age',
     summary: 'A time of political strength, cultural flourishing, and territorial expansion.',
-    timeframe: 'Late 15th Century to Mid-17th Century',
+    timeframe: 'Late 15th — Mid-17th Century',
     years: [1635, 1653],
-    color: '#907618',
+    color: '#6E5A12',
   },
   {
-    name: 'The Era of Wars & Partitions',
+    name: 'The Silver Age & Era of Wars',
     summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th Century to 19th Century',
-    years: [1686, 1699, 1721, 1742, 1772, 1792, 1793, 1795],
-    color: '#588240',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1686, 1699, 1701, 1713, 1721, 1742],
+    color: '#3E642B',
+  },
+  {
+    name: 'Silver Age & Era of Wars: First Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1772, 1792],
+    color: '#3E642B',
+  },
+    {
+    name: 'Silver Age & Era of Wars: Second Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1793],
+    color: '#3E642B',
+  },
+  {
+    name: 'Silver Age & Era of Wars: Third Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1795],
+    color: '#3E642B',
   },
   {
     name: 'Struggle for Independence',
     summary: 'A century of failed uprisings and growing nationalism.',
-    timeframe: '19th Century to WW1',
-    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878],
-    color: '#806FB8',
+    timeframe: '19th Century — WW1',
+    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878, 1884, 1894, 1904],
+    color: '#5E4E95',
   },
   {
     name: 'Rebirth of Poland',
     summary: 'Poland regained its independence and rebuilt itself as a sovereign state.',
-    timeframe: '',
-    years: [1914, 1917, 1918, 1919, 1920, 1922, 1938],
-    color: '#917459',
+    timeframe: '1914 — 1939',
+    years: [1914, 1917, 1918, 1919, 1920, 1921, 1924, 1933, 1938],
+    color: '#6F563E',
   },
   {
     name: 'World War II & Occupation',
     summary: 'Poland was invaded and divided between Nazi Germany and the Soviet Union.',
-    timeframe: '1939 to 1945',
-    years: [1939, 1940, 1944, 1945],
-    color: '#537F9D',
+    timeframe: '1939 — 1945',
+    years: [1939, 1940, 1942, 1944],
+    color: '#3B6583',
+  },
+  {
+    name: 'Liberation & Reorganization',
+    summary: 'N/A',
+    timeframe: '1945 — 1948',
+    years: [1945],
+    color: '#3F6E8E',
   },
   {
     name: 'Communist Poland',
     summary: 'Communist Poland under Soviet influence.',
-    timeframe: '1945 to 1989',
-    years: [1948, 1951, 1960, 1970, 1975, 1980, 1987],
-    color: '#A06B6A',
+    timeframe: '1948 — 1980',
+    years: [1948, 1951, 1960, 1970],
+    color: '#8B5E4A',
+  },
+    {
+    name: 'Growing Discontent',
+    summary: 'N/A',
+    timeframe: '1980 — 1989',
+    years: [1980, 1985],
+    color: '#6F5A8F',
   },
   {
     name: 'Modern Poland',
     summary: 'Where we are today: a democratic republic and member of the EU and NATO.',
-    timeframe: '1990 to Present',
-    years: [1991, 1993, 2003, 2009],
+    timeframe: '1989 — Present',
+    years: [1989, 1993, 2002, 2009],
     color: '#0F766E',
   },
 ];
@@ -100,6 +135,7 @@ const DEFAULT_INDEX = Math.max(
 
 const MAP_1635 = require('@/assets/maps_svg/1635-Realsize.svg');
 const MAP_1699 = require('@/assets/maps_svg/1699,1701,1713.svg');
+const MAP_1721 = require('@/assets/maps_svg/1721.svg');
 const MAP_1772 = require('@/assets/maps_svg/1772.svg');
 const MAP_1793 = require('@/assets/maps_svg/1793.svg');
 const MAP_1795 = require('@/assets/maps_svg/1795.svg');
@@ -109,6 +145,7 @@ const MAP_1831 = require('@/assets/maps_svg/1831.svg');
 const MAP_1846 = require('@/assets/maps_svg/1846.svg');
 const MAP_1848 = require('@/assets/maps_svg/1848.svg');
 const MAP_1867 = require('@/assets/maps_svg/1867.svg');
+const MAP_1871 = require('@/assets/maps_svg/1871.svg');
 const MAP_1878 = require('@/assets/maps_svg/1878, 1884,1894,1904.svg');
 const MAP_1917 = require('@/assets/maps_svg/1917.svg');
 const MAP_1918 = require('@/assets/maps_svg/1918 - 5.svg');
@@ -121,7 +158,7 @@ const MAP_1940 = require('@/assets/maps_svg/1940.1942.svg');
 const MAP_1944 = require('@/assets/maps_svg/1944.svg');
 const MAP_1945 = require('@/assets/maps_svg/1945 - 5.svg');
 const MAP_1948 = require('@/assets/maps_svg/1948, 1951, 1960, 1970, 1975, 1980, 1987.svg');
-const MAP_1991 = require('@/assets/maps_svg/1991.svg');
+const MAP_1989 = require('@/assets/maps_svg/1989.svg');
 const MAP_1993 = require('@/assets/maps_svg/1993, 2002, 2011.svg');
 
 const RIGHT_ALIGNED_MAP_POSITION = { right: 0, top: '32%' };
@@ -139,6 +176,7 @@ const HOTSPOT_ICONS = {
 const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1635, source: MAP_1635 },
   { startYear: 1686, source: MAP_1699 },
+  { startYear: 1721, source: MAP_1721 },
   { startYear: 1772, source: MAP_1772 },
   { startYear: 1793, source: MAP_1793 },
   { startYear: 1795, source: MAP_1795 },
@@ -148,6 +186,7 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1846, source: MAP_1846 },
   { startYear: 1848, source: MAP_1848 },
   { startYear: 1867, source: MAP_1867 },
+  { startYear: 1871, source: MAP_1871 },
   { startYear: 1878, source: MAP_1878 },
   { startYear: 1917, source: MAP_1917 },
   { startYear: 1918, source: MAP_1918 },
@@ -160,7 +199,7 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1944, source: MAP_1944 },
   { startYear: 1945, source: MAP_1945 },
   { startYear: 1948, source: MAP_1948 },
-  { startYear: 1991, source: MAP_1991 },
+  { startYear: 1989, source: MAP_1989 },
   { startYear: 1993, source: MAP_1993 },
 ];
 
