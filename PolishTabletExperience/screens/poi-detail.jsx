@@ -1,3 +1,4 @@
+import React from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import {
@@ -11,6 +12,7 @@ import {
 import Svg, { Path } from 'react-native-svg';
 import { MainColors, Typography } from '@/constants/theme';
 import { POI_DETAILS } from '../constants/contentData';
+import { useVisited } from '@/components/VisitedContext';
 
 function BackIcon({ size = 28, color = '#1C1B1F' }) {
   return (
@@ -31,6 +33,16 @@ export default function POIDetailScreen() {
   const currentId = typeof params.id === 'string' ? params.id : DEFAULT_MAIN_ID;
 
   const mainPoi = POI_DETAILS[currentId] || POI_DETAILS[DEFAULT_MAIN_ID];
+  const { visitedIds, markVisited } = useVisited();
+
+  // Record "whether the user has visited this POI before entering this POI detail page"
+  // First time entering: visitedIds does not include this id, so it is false; leaving and coming back: it is true
+  const hasVisitedBeforeRef = React.useRef(visitedIds.includes(mainPoi.id));
+
+  // Mark current POI as visited when this screen mounts or id changes
+  React.useEffect(() => {
+    markVisited(mainPoi.id);
+  }, [mainPoi.id, markVisited]);
 
   const relatedPois =
     (mainPoi.relatedIds || [])
@@ -70,6 +82,7 @@ export default function POIDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={[styles.mainContent, contentFlex]}>
+          {/* Embedded video: use key={mediaResetKey} from useVisited() so GuideScreen reset restarts playback. */}
           <View style={styles.imagePlaceholder}>
             {mainPoi.mainImage ? (
               <Image source={mainPoi.mainImage} style={styles.mainImage} contentFit="cover" />
@@ -77,14 +90,23 @@ export default function POIDetailScreen() {
           </View>
           <View style={styles.titleRow}>
             <Text style={styles.poiTitle}>{mainPoi.titleTop}</Text>
-            <Text style={styles.poiValue}>{mainPoi.yearLabel}</Text>
+            <View style={styles.rightTitleArea}>
+              {hasVisitedBeforeRef.current && (
+                <View style={styles.visitedBadge}>
+                  <Text style={styles.visitedBadgeText}>Visited</Text>
+                </View>
+              )}
+              <Text style={styles.poiValue}>{mainPoi.yearLabel}</Text>
+            </View>
           </View>
           <Text style={styles.description}>{mainPoi.description}</Text>
         </View>
 
         <View style={[styles.relatedSection, relatedFlex]}>
           <Text style={styles.relatedTitle}>Related Content</Text>
-          {relatedPois.map((item) => (
+          {relatedPois.map((item) => {
+            const isVisited = visitedIds.includes(item.id);
+            return (
             <TouchableOpacity
               key={item.id}
               style={styles.relatedCard}
@@ -106,14 +128,21 @@ export default function POIDetailScreen() {
                   <Text style={styles.relatedCardTitle} numberOfLines={1}>
                     {item.title}
                   </Text>
-                  <Text style={styles.relatedCardValue}>{item.value}</Text>
+                  <View style={styles.relatedRightArea}>
+                    {isVisited && (
+                      <View style={styles.visitedBadgeSmall}>
+                        <Text style={styles.visitedBadgeSmallText}>Visited</Text>
+                      </View>
+                    )}
+                    <Text style={styles.relatedCardValue}>{item.value}</Text>
+                  </View>
                 </View>
                 <Text style={styles.relatedCardDesc} numberOfLines={2}>
                   {item.description}
                 </Text>
               </View>
             </TouchableOpacity>
-          ))}
+          )})}
         </View>
       </ScrollView>
     </View>
@@ -170,6 +199,11 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     gap: 12,
   },
+  rightTitleArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   poiTitle: {
     ...Typography.h4,
     color: MainColors.primaryBlack,
@@ -178,6 +212,16 @@ const styles = StyleSheet.create({
   poiValue: {
     ...Typography.h4,
     color: MainColors.primaryBlack,
+  },
+  visitedBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: MainColors.pointRed,
+  },
+  visitedBadgeText: {
+    ...Typography.small,
+    color: '#FFFFFF',
   },
   description: {
     ...Typography.body,
@@ -226,6 +270,11 @@ const styles = StyleSheet.create({
     color: MainColors.primaryBlack,
     flex: 1,
   },
+  relatedRightArea: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   relatedCardValue: {
     ...Typography.small,
     color: MainColors.primaryBlack,
@@ -233,5 +282,15 @@ const styles = StyleSheet.create({
   relatedCardDesc: {
     ...Typography.small,
     color: MainColors.textGrey,
+  },
+  visitedBadgeSmall: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: MainColors.pointRed,
+  },
+  visitedBadgeSmallText: {
+    ...Typography.small,
+    color: '#FFFFFF',
   },
 });

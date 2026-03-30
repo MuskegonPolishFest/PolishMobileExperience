@@ -97,29 +97,34 @@
 //   },
 // });
 
+import React, { useState } from 'react';
 import TimelineScreen from '@/components/screens/timeline-screen';
 import ContentScreen from '@/screens/ContentScreen';
-import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { EraKey } from '@/constants/contentData';
 
 type HomeView = 'timeline' | 'content';
 
 export default function IndexScreen() {
-	const [view, setView] = useState<HomeView>('timeline');
-	const [contentEra, setContentEra] = useState<EraKey>('all');
-	const [timelineYear, setTimelineYear] = useState<number | undefined>(1918);
+  const [view, setView] = useState<HomeView>('timeline');
+  const [contentEra, setContentEra] = useState<EraKey>('all');
+  const [timelineYear, setTimelineYear] = useState<number | undefined>(1918);
 	const { year } = useLocalSearchParams<{ year?: string }>();
 
 	const selectedYear = year ? Number(year) : undefined;
 
-	if (view === 'content') {
-		return (<ContentScreen initialEra={contentEra}
-			onPressTimeline={(year) => {
-			setTimelineYear(year);
-			setView('timeline');
-		}}  />);
-	}
+
+  if (view === 'content') {
+    return (
+      <ContentScreen
+        initialEra={contentEra}
+        onPressTimeline={(year) => {
+          setTimelineYear(year);
+          setView('timeline');
+        }}
+      />
+    );
+  }
 
 	return (
 		<TimelineScreen

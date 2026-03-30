@@ -1,13 +1,57 @@
+import { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { MainColors, EraColors, QuizResultColors, Typography } from "@/constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { Link } from 'expo-router';
+import { useVisited } from "@/components/VisitedContext";
 
-
+const RESET_TOAST_MS = 1500;
 
 export default function GuideScreen() {
+  const { resetExperience } = useVisited();
+  const [showResetToast, setShowResetToast] = useState(false);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleResetPress = () => {
+    resetExperience();
+    setShowResetToast(true);
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    toastTimeoutRef.current = setTimeout(() => {
+      setShowResetToast(false);
+      toastTimeoutRef.current = null;
+    }, RESET_TOAST_MS);
+  };
+
   return (
     <View style={styles.container}>
+        <TouchableOpacity
+          style={[styles.resetButton, showResetToast && styles.resetButtonDisabled]}
+          onPress={handleResetPress}
+          disabled={showResetToast}
+          accessibilityRole="button"
+          accessibilityState={{ disabled: showResetToast }}
+          accessibilityLabel="Reset all progress"
+          activeOpacity={0.7}
+        >
+          <Image
+            source={require("../assets/General_Icons/restart.png")}
+            style={[styles.resetIcon, showResetToast && styles.resetIconDisabled]}
+            resizeMode="contain"
+          />
+          <Text style={[styles.resetLabel, showResetToast && styles.resetLabelDisabled]}>
+            restart
+          </Text>
+        </TouchableOpacity>
 
         <View style ={styles.titleContainer}>
       <Text style={styles.title}>Do You Know {"\n"}Who Your Guide Is?</Text>
@@ -138,6 +182,21 @@ export default function GuideScreen() {
             </TouchableOpacity>
             </Link>
         </View>
+
+        {showResetToast ? (
+          <View
+            style={styles.resetToastWrap}
+            pointerEvents="none"
+            accessibilityLiveRegion="polite"
+            accessibilityRole="text"
+          >
+            <View style={styles.resetToastBox}>
+              <Text style={styles.resetToastText}>
+                You have successfully reset the experience!
+              </Text>
+            </View>
+          </View>
+        ) : null}
     </View>
    );
 }
@@ -148,6 +207,56 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: MainColors.backgroundBeige,
+  },
+  resetButton: {
+    position: "absolute",
+    top: 40,
+    right: 40,
+    zIndex: 20,
+    padding: 14,
+    backgroundColor: "transparent",
+  },
+  resetButtonDisabled: {
+    opacity: 0.85,
+  },
+  resetIcon: {
+    width: 60,
+    height: 60,
+  },
+  resetIconDisabled: {
+    opacity: 0.4,
+  },
+  resetLabel: {
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    fontFamily: "Inter-Bold",
+    color: MainColors.primaryBlack,
+    textTransform: "lowercase",
+  },
+  resetLabelDisabled: {
+    color: MainColors.secondaryGrey,
+  },
+  resetToastWrap: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 100,
+    paddingHorizontal: 32,
+  },
+  resetToastBox: {
+    maxWidth: 420,
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    backgroundColor: "rgba(0, 0, 0, 0.78)",
+  },
+  resetToastText: {
+    textAlign: "center",
+    fontSize: 16,
+    fontFamily: "Inter-Medium",
+    color: "#FFFFFF",
+    lineHeight: 22,
   },
     card: {
         width: 300,
