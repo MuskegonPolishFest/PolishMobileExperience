@@ -79,11 +79,21 @@ export default function POIDetailScreen() {
 
   const handleBack = () => {
     if (returnParams.returnRoot === 'content' && returnParams.returnEra) {
-      router.dismissAll();
+      router.dismissTo({
+        pathname: '/',
+        params: {
+          openContentEra: returnParams.returnEra,
+        },
+      });
       return;
     }
     if (returnParams.returnRoot === 'timeline' && returnParams.returnYear) {
-      router.dismissAll();
+      router.dismissTo({
+        pathname: '/',
+        params: {
+          openTimelineAtYear: returnParams.returnYear,
+        },
+      });
       return;
     }
     router.back();

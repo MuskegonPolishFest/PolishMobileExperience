@@ -114,13 +114,25 @@ function paramFirst(value: string | string[] | undefined): string | undefined {
 
 export default function IndexScreen() {
 	const router = useRouter();
-	const params = useLocalSearchParams<{ openTimelineAtYear?: string | string[] }>();
+	const params = useLocalSearchParams<{
+		openTimelineAtYear?: string | string[];
+		openContentEra?: string | string[];
+	}>();
   const [view, setView] = useState<HomeView>('timeline');
   const [contentEra, setContentEra] = useState<EraKey>('all');
   const [timelineYear, setTimelineYear] = useState<number | undefined>(1918);
-	const { year } = useLocalSearchParams<{ year?: string }>();
 
-	const selectedYear = year ? Number(year) : undefined;
+	const isEraKey = (value: string): value is EraKey =>
+		[
+			'all',
+			'golden_age',
+			'wars_partitions',
+			'independence',
+			'rebirth',
+			'ww2',
+			'communist',
+			'modern',
+		].includes(value);
 
 
 
@@ -135,6 +147,17 @@ export default function IndexScreen() {
 			router.setParams({ openTimelineAtYear: undefined });
 		});
 	}, [params.openTimelineAtYear, router]);
+
+	useEffect(() => {
+		const era = paramFirst(params.openContentEra);
+		if (era == null || era === '') return;
+		if (!isEraKey(era)) return;
+		setContentEra(era);
+		setView('content');
+		queueMicrotask(() => {
+			router.setParams({ openContentEra: undefined });
+		});
+	}, [params.openContentEra, router]);
   if (view === 'content') {
     return (
       <ContentScreen
@@ -149,7 +172,7 @@ export default function IndexScreen() {
 
 	return (
 		<TimelineScreen
-		  initialYear={selectedYear}
+		  initialYear={timelineYear}
 			onTimelineYearChange={setTimelineYear}
 		  onPressContent={(era) => {
 			setContentEra(era);

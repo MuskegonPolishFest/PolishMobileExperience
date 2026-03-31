@@ -363,7 +363,11 @@ export default function TimelineScreen({
                   onPopupPress={() => {
                     router.push({
                       pathname: '/poi-detail',
-                      params: { id: poi.id },
+                      params: {
+                        id: poi.id,
+                        returnRoot: 'timeline',
+                        returnYear: String(selectedEra.year),
+                      },
                     });
                   }}
                   titleTop={poi.titleTop}
