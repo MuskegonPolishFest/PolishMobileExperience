@@ -453,10 +453,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#f2e8b8',
+    borderColor: '#ffffff',
   },
   activePillText: {
-    color: '#fff4d4',
+    color: '#ffffff',
     fontWeight: '700',
     fontSize: 20,
   },

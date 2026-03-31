@@ -5,13 +5,14 @@ import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
-import { FontFamily } from '@/constants/theme';
-import { EraKey } from '@/constants/contentData';
+import { FontFamily, MainColors } from '@/constants/theme';
+import { EraKey, POI_DETAILS } from '@/constants/contentData';
+import { HOTSPOT_POSITIONS } from '@/constants/hotspotPositions';
 
 const HOME_ICON = require('@/assets/General_Icons/ Home_icon.svg');
 
 import MapHotspot from '@/components/MapHotspot';
-
+import PoiButton from '../PoiButton';
 
 
 type EraDefinition = {
@@ -32,50 +33,85 @@ const ERA_DEFINITIONS: EraDefinition[] = [
   {
     name: 'The Golden Age',
     summary: 'A time of political strength, cultural flourishing, and territorial expansion.',
-    timeframe: 'Late 15th Century to Mid-17th Century',
+    timeframe: 'Late 15th — Mid-17th Century',
     years: [1635, 1653],
-    color: '#907618',
+    color: '#6E5A12',
   },
   {
-    name: 'The Era of Wars & Partitions',
+    name: 'The Silver Age & Era of Wars',
     summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th Century to 19th Century',
-    years: [1686, 1699, 1721, 1742, 1772, 1792, 1793, 1795],
-    color: '#588240',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1686, 1699, 1701, 1713, 1721, 1742],
+    color: '#3E642B',
+  },
+  {
+    name: 'Silver Age & Era of Wars: First Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1772, 1792],
+    color: '#3E642B',
+  },
+    {
+    name: 'Silver Age & Era of Wars: Second Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1793],
+    color: '#3E642B',
+  },
+  {
+    name: 'Silver Age & Era of Wars: Third Partition',
+    summary: 'Marked by wars, weakening government, and foreign interference.',
+    timeframe: 'Late 17th — 19th Century',
+    years: [1795],
+    color: '#3E642B',
   },
   {
     name: 'Struggle for Independence',
     summary: 'A century of failed uprisings and growing nationalism.',
-    timeframe: '19th Century to WW1',
-    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878],
-    color: '#806FB8',
+    timeframe: '19th Century — WW1',
+    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878, 1884, 1894, 1904],
+    color: '#5E4E95',
   },
   {
     name: 'Rebirth of Poland',
     summary: 'Poland regained its independence and rebuilt itself as a sovereign state.',
-    timeframe: '',
-    years: [1914, 1917, 1918, 1919, 1920, 1922, 1938],
-    color: '#917459',
+    timeframe: '1914 — 1939',
+    years: [1914, 1917, 1918, 1919, 1920, 1921, 1924, 1933, 1938],
+    color: '#6F563E',
   },
   {
     name: 'World War II & Occupation',
     summary: 'Poland was invaded and divided between Nazi Germany and the Soviet Union.',
-    timeframe: '1939 to 1945',
-    years: [1939, 1940, 1944, 1945],
-    color: '#537F9D',
+    timeframe: '1939 — 1945',
+    years: [1939, 1940, 1942, 1944],
+    color: '#3B6583',
+  },
+  {
+    name: 'Liberation & Reorganization',
+    summary: 'N/A',
+    timeframe: '1945 — 1948',
+    years: [1945],
+    color: '#3F6E8E',
   },
   {
     name: 'Communist Poland',
     summary: 'Communist Poland under Soviet influence.',
-    timeframe: '1945 to 1989',
-    years: [1948, 1951, 1960, 1970, 1975, 1980, 1987],
-    color: '#A06B6A',
+    timeframe: '1948 — 1980',
+    years: [1948, 1951, 1960, 1970],
+    color: '#8B5E4A',
+  },
+    {
+    name: 'Growing Discontent',
+    summary: 'N/A',
+    timeframe: '1980 — 1989',
+    years: [1980, 1985],
+    color: '#6F5A8F',
   },
   {
     name: 'Modern Poland',
     summary: 'Where we are today: a democratic republic and member of the EU and NATO.',
-    timeframe: '1990 to Present',
-    years: [1991, 1993, 2003, 2009],
+    timeframe: '1989 — Present',
+    years: [1989, 1993, 2002, 2009],
     color: '#0F766E',
   },
 ];
@@ -100,6 +136,7 @@ const DEFAULT_INDEX = Math.max(
 
 const MAP_1635 = require('@/assets/maps_svg/1635-Realsize.svg');
 const MAP_1699 = require('@/assets/maps_svg/1699,1701,1713.svg');
+const MAP_1721 = require('@/assets/maps_svg/1721.svg');
 const MAP_1772 = require('@/assets/maps_svg/1772.svg');
 const MAP_1793 = require('@/assets/maps_svg/1793.svg');
 const MAP_1795 = require('@/assets/maps_svg/1795.svg');
@@ -109,6 +146,7 @@ const MAP_1831 = require('@/assets/maps_svg/1831.svg');
 const MAP_1846 = require('@/assets/maps_svg/1846.svg');
 const MAP_1848 = require('@/assets/maps_svg/1848.svg');
 const MAP_1867 = require('@/assets/maps_svg/1867.svg');
+const MAP_1871 = require('@/assets/maps_svg/1871.svg');
 const MAP_1878 = require('@/assets/maps_svg/1878, 1884,1894,1904.svg');
 const MAP_1917 = require('@/assets/maps_svg/1917.svg');
 const MAP_1918 = require('@/assets/maps_svg/1918 - 5.svg');
@@ -121,17 +159,25 @@ const MAP_1940 = require('@/assets/maps_svg/1940.1942.svg');
 const MAP_1944 = require('@/assets/maps_svg/1944.svg');
 const MAP_1945 = require('@/assets/maps_svg/1945 - 5.svg');
 const MAP_1948 = require('@/assets/maps_svg/1948, 1951, 1960, 1970, 1975, 1980, 1987.svg');
-const MAP_1991 = require('@/assets/maps_svg/1991.svg');
+const MAP_1989 = require('@/assets/maps_svg/1989.svg');
 const MAP_1993 = require('@/assets/maps_svg/1993, 2002, 2011.svg');
 
 const RIGHT_ALIGNED_MAP_POSITION = { right: 0, top: '32%' };
+const LEFT_BACKGROUND_VECTOR = require('@/assets/maps_svg/background-vector.svg');
 
 const CULTURE_ICON = require('@/assets/POI_Icon/POI_Culture.svg');
-const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
+// const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
+const HOTSPOT_ICONS = {
+  culture: require('@/assets/POI_Icon/POI_Culture.svg'),
+  biography: require('@/assets/POI_Icon/POI_Biography.svg'),
+  history: require('@/assets/POI_Icon/POI_History.svg'),
+  science: require('@/assets/POI_Icon/POI_Science.svg'),
+};
 
 const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1635, source: MAP_1635 },
   { startYear: 1686, source: MAP_1699 },
+  { startYear: 1721, source: MAP_1721 },
   { startYear: 1772, source: MAP_1772 },
   { startYear: 1793, source: MAP_1793 },
   { startYear: 1795, source: MAP_1795 },
@@ -141,6 +187,7 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1846, source: MAP_1846 },
   { startYear: 1848, source: MAP_1848 },
   { startYear: 1867, source: MAP_1867 },
+  { startYear: 1871, source: MAP_1871 },
   { startYear: 1878, source: MAP_1878 },
   { startYear: 1917, source: MAP_1917 },
   { startYear: 1918, source: MAP_1918 },
@@ -153,7 +200,7 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1944, source: MAP_1944 },
   { startYear: 1945, source: MAP_1945 },
   { startYear: 1948, source: MAP_1948 },
-  { startYear: 1991, source: MAP_1991 },
+  { startYear: 1989, source: MAP_1989 },
   { startYear: 1993, source: MAP_1993 },
 ];
 
@@ -193,14 +240,31 @@ function getIndexFromYear(year: number) {
   return foundIndex >= 0 ? foundIndex : DEFAULT_INDEX;
 }
 
-export default function TimelineScreen({ onPressContent,
+export default function TimelineScreen({
+  onPressContent,
   onTimelineYearChange,
-  initialYear = 1635, }: TimelineScreenProps) {
+  initialYear,
+}: TimelineScreenProps) {
   const router = useRouter();
-  const [selectedIndex, setSelectedIndex] = useState(() => getIndexFromYear(initialYear));
-  useEffect(() => {
-    setSelectedIndex(getIndexFromYear(initialYear));
+
+  const initialIndex = useMemo(() => {
+    if (initialYear != null && !Number.isNaN(initialYear)) {
+      const foundIndex = ERA_ITEMS.findIndex((item) => item.year === initialYear);
+      if (foundIndex >= 0) return foundIndex;
+    }
+
+    return DEFAULT_INDEX;
   }, [initialYear]);
+
+
+    const [selectedIndex, setSelectedIndex] = useState(initialIndex);
+  
+    useEffect(() => {
+      setSelectedIndex(initialIndex);
+    }, [initialIndex]);
+  
+
+
   const selectedEra = useMemo(() => ERA_ITEMS[selectedIndex] ?? ERA_ITEMS[0], [selectedIndex]);
 
   useEffect(() => {
@@ -216,13 +280,30 @@ export default function TimelineScreen({ onPressContent,
   const selectedEraMap = useMemo(() => getEraBackgroundMap(selectedEra.year), [selectedEra.year]);
 
   const targetEraKey = getEraKeyFromLabel(selectedEra.label);
+  
+  const visibleHotspots = useMemo(() => {
+    if (targetEraKey === 'all') return [];
 
-  const [poiOpen, setPoiOpen] = useState(false);
+    return Object.values(POI_DETAILS).filter((poi) =>
+      poi.eraKeys.includes(targetEraKey)
+    );
+  }, [targetEraKey]);
+
+  const [openPoiId, setOpenPoiId] = useState<string | null>(null);
+  
+  useEffect(() => {
+    setOpenPoiId(null);
+  }, [selectedEra.year]);
 
   return (
     <View style={styles.screen}>
       <SafeAreaView style={styles.container}>
         <View style={styles.mapArea}>
+          <View style={styles.leftLandWaterLayer} pointerEvents="none">
+            <View style={styles.leftLandFill} />
+            <Image source={LEFT_BACKGROUND_VECTOR} style={styles.leftVectorImage} contentFit="fill" />
+          </View>
+
           <Image
             source={selectedEraMap}
             style={[styles.backgroundImage, { zIndex: 1 }]}
@@ -230,60 +311,77 @@ export default function TimelineScreen({ onPressContent,
             contentPosition="right center"
             pointerEvents="none"
           />
-
+  
           <TouchableOpacity
             style={styles.homeButton}
-            onPress={() => router.push('/modal')}
+            onPress={() => router.push('/GuideScreen')}
             activeOpacity={0.85}
           >
             <Image source={HOME_ICON} style={styles.homeIcon} contentFit="contain" />
           </TouchableOpacity>
-
-          <View style={styles.eraCard}>
-            <Text style={[styles.eraYear, { color: selectedEra.color }]}>
-              {selectedEra.year}
-            </Text>
-
-            <Text style={styles.eraName}>{selectedEraDefinition.name}</Text>
-
-            {selectedEraDefinition.timeframe ? (
-              <Text style={[styles.eraTimeframe, { color: selectedEra.color }]}>
-                {selectedEraDefinition.timeframe}
+  
+          <View style={{ flexDirection: 'column', gap: 20 }}>
+            <View style={styles.eraCard}>
+              <Text style={[styles.eraYear, { color: selectedEra.color }]}>
+                {selectedEra.year}
               </Text>
-            ) : null}
-
-            <Text style={styles.eraSummary}>{selectedEraDefinition.summary}</Text>
+  
+              <Text style={styles.eraName}>{selectedEraDefinition.name}</Text>
+  
+              {selectedEraDefinition.timeframe ? (
+                <Text style={[styles.eraTimeframe, { color: selectedEra.color }]}>
+                  {selectedEraDefinition.timeframe}
+                </Text>
+              ) : null}
+  
+              <Text style={styles.eraSummary}>{selectedEraDefinition.summary}</Text>
+            </View>
+            <PoiButton
+              description='This is a sample description text for the point of interest. It can be multiple lines long and provides more details about the hotspot.'
+              />
           </View>
-          <MapHotspot
-            top={500}
-            left={600}
-            iconSource={CULTURE_ICON}
-            imageSource={HOTSPOT_IMAGE}
-            isOpen={poiOpen}
-            onHotspotPress={() => setPoiOpen(!poiOpen)}
-            onPopupPress={() => {
-              setPoiOpen(false);
-              router.push({
-                pathname: '/poi-detail',
-                params: {
-                  id: 'c3',
-                  returnRoot: 'timeline',
-                  returnYear: String(selectedEra.year),
-                },
-              });
-            }}
-            style={{ zIndex: 10, elevation: 10 }}
-          />
-        </View>
+            {visibleHotspots.map((poi) => {
+              const position = HOTSPOT_POSITIONS[poi.id];
 
+              if (!position || !poi.mainImage) return null;
+
+              return (
+                <MapHotspot
+                  key={poi.id}
+                  top={position.top}
+                  left={position.left}
+                  iconSource={CULTURE_ICON}
+                  // iconSource={HOTSPOT_ICONS[poi.iconType]}
+                  imageSource={poi.mainImage}
+                  isOpen={openPoiId === poi.id}
+                  onHotspotPress={() =>
+                    setOpenPoiId((current) => (current === poi.id ? null : poi.id))
+                  }
+                  // onPopupPress={() => {
+                  //   console.log('Open detail page for', poi.id);
+                  // }} //change this to navigate to the detail screen for the POI
+                  onPopupPress={() => {
+                    router.push({
+                      pathname: '/poi-detail',
+                      params: { id: poi.id },
+                    });
+                  }}
+                  titleTop={poi.titleTop}
+                  yearLabel={poi.yearLabel}
+                  description={poi.summary ?? poi.description}
+                  style={{ zIndex: 10, elevation: 10 }}
+                />
+              );
+            })}
+
+          </View>
         <View style={styles.bottomControls}>
-          {/* 🔥 MODIFIED: 只保留一个 toggle，位置放在 timeline 上方 */}
           <View style={styles.bottomToggleContainer}>
             <View style={styles.toggleWrapper}>
               <View style={styles.activeToggle}>
                 <Text style={styles.activeToggleText}>Timeline</Text>
               </View>
-
+  
               <TouchableOpacity
                 style={styles.inactiveToggle}
                 onPress={() => onPressContent?.(targetEraKey)}
@@ -293,13 +391,12 @@ export default function TimelineScreen({ onPressContent,
               </TouchableOpacity>
             </View>
           </View>
-
-          {/* 🧱 MODIFIED: timeline 单独在最上层，和 svg 接触但不覆盖 */}
+  
           <View style={styles.timelinePanel}>
             <TimelineScrubber
               key={`timeline-${initialYear}`}
               items={ERA_ITEMS}
-              initialIndex={getIndexFromYear(initialYear)}
+              initialIndex={initialYear != null ? getIndexFromYear(initialYear) : DEFAULT_INDEX}
               maxGapYears={40}
               pixelsPerYear={3.8}
               minGapPixels={20}
@@ -307,40 +404,61 @@ export default function TimelineScreen({ onPressContent,
             />
           </View>
         </View>
-
-        
       </SafeAreaView>
     </View>
   );
-}
-
+              }
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: '#D3DCCD',
-    paddingBottom: 5,
+    paddingBottom: 0,
   },
 
   container: {
     flex: 1,
+    backgroundColor: '#D3DCCD',
   },
 
   mapArea: {
-  flex: 1,
-  paddingHorizontal: 28,
-  paddingTop: 18,
-  overflow: 'hidden',
-  zIndex: 1,
-},
+    flex: 1,
+    paddingHorizontal: 28,
+    paddingTop: 18,
+    overflow: 'hidden',
+    zIndex: 1,
+  },
 
-backgroundImage: {
-  position: 'absolute',
-  top: 0,
-  right: 0,
-  bottom: 0,
-  left: '41%',
-  zIndex: 1,
-},
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: '41%',
+    zIndex: 1,
+  },
+
+  leftLandWaterLayer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    width: '44%',
+    zIndex: 0,
+    overflow: 'hidden',
+  },
+
+  leftLandFill: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#D3DCCD',
+  },
+
+  leftVectorImage: {
+    position: 'absolute',
+    top: -170,
+    left: 0,
+    right: 0,
+    height: '80%',
+  },
 
   homeButton: {
     width: 52,
@@ -363,7 +481,6 @@ backgroundImage: {
     padding: 16,
     borderRadius: 10,
     backgroundColor: 'rgba(241, 241, 241, 0.94)',
-    zIndex: 3,
   },
 
   eraYear: {
@@ -396,17 +513,17 @@ backgroundImage: {
   },
 
   bottomControls: {
-  zIndex: 5,
-},
+    zIndex: 5,
+    backgroundColor: '#D3DCCD',
+  },
 
-bottomToggleContainer: {
-  position: 'absolute',
-  left: 20,
-  bottom: 92,
-  zIndex: 20,
-},
+  bottomToggleContainer: {
+    position: 'absolute',
+    left: 20,
+    bottom: 92,
+    zIndex: 20,
+  },
 
-  // 🎨 MODIFIED: 完全照 Content page
   toggleWrapper: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
@@ -414,14 +531,12 @@ bottomToggleContainer: {
     padding: 2,
   },
 
-  // 🎨 MODIFIED: 去掉 minWidth，padding 改成和 Content page 一样
   inactiveToggle: {
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 40,
   },
 
-  // 🎨 MODIFIED: 去掉 minWidth，padding 改成和 Content page 一样
   activeToggle: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -443,10 +558,10 @@ bottomToggleContainer: {
     fontFamily: FontFamily.interMedium,
   },
 
-  // 🧱 MODIFIED: timeline 在最上层显示
   timelinePanel: {
-  height: 88,
-  justifyContent: 'flex-end',
-  zIndex: 10,
-},
+    height: 88,
+    justifyContent: 'flex-end',
+    zIndex: 10,
+    backgroundColor: '#D3DCCD',
+  },
 });

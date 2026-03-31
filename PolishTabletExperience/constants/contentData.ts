@@ -50,7 +50,12 @@ export type PoiDetail = {
     mainImage?: any;
     // IDs of other cards to show in "Related Content"
     relatedIds: string[];
+
+    //TODO add poi icon type
+    // iconType: PoiIconType;
 };
+
+// export type PoiIconType = 'culture' | 'biography' | 'history' | 'science';
 
 export const POI_DETAILS: Record<string, PoiDetail> = {
     c1: {
@@ -63,6 +68,7 @@ export const POI_DETAILS: Record<string, PoiDetail> = {
         summary: "Poland protected religious freedom early",
         mainImage: require("../assets/content_images/GoldenAge/GoldenAge_1.png"),
         relatedIds: ["c2", "c3"],
+        // iconType: 'culture',
     },
     c2: {
         id: "c2",

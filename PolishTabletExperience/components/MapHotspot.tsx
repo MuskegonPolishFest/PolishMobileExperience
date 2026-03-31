@@ -1,7 +1,15 @@
 import { Image } from 'expo-image';
-import { Pressable, StyleSheet, StyleProp, Text, View, ViewStyle } from 'react-native';
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 type Props = {
+
   top: number | string;
   left: number | string;
   iconSource: any;
@@ -10,6 +18,10 @@ type Props = {
   onHotspotPress: () => void;
   onPopupPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  titleTop: string;
+  yearLabel: string;
+  description: string;
+  
 };
 
 export default function MapHotspot({
@@ -21,9 +33,12 @@ export default function MapHotspot({
   onHotspotPress,
   onPopupPress,
   style,
+  titleTop,
+  yearLabel,
+  description,
 }: Props) {
   return (
-    <View style={[styles.container, { top, left }]}>
+    <View style={[styles.container, { top, left }, style]}>
       {isOpen && (
         <Pressable style={styles.popupWrapper} onPress={onPopupPress}>
           <View style={styles.popup}>
@@ -31,13 +46,11 @@ export default function MapHotspot({
 
             <View style={styles.textSection}>
               <View style={styles.headerRow}>
-                <Text style={styles.title}>Did You Know?</Text>
-                <Text style={styles.year}>1791</Text>
+                <Text style={styles.title}>{titleTop}</Text>
+                <Text style={styles.year}>{yearLabel}</Text>
               </View>
 
-              <Text style={styles.description}>
-                Poland wrote the world&apos;s second constitution
-              </Text>
+              <Text style={styles.description}>{description}</Text>
             </View>
           </View>
 
