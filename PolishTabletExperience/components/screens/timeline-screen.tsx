@@ -25,6 +25,7 @@ type EraDefinition = {
 
 type TimelineScreenProps = {
   onPressContent?: (era: EraKey) => void;
+  onTimelineYearChange?: (year: number) => void;
   initialYear?: number;
 };
 
@@ -241,6 +242,7 @@ function getIndexFromYear(year: number) {
 
 export default function TimelineScreen({
   onPressContent,
+  onTimelineYearChange,
   initialYear,
 }: TimelineScreenProps) {
   const router = useRouter();
@@ -264,6 +266,10 @@ export default function TimelineScreen({
 
 
   const selectedEra = useMemo(() => ERA_ITEMS[selectedIndex] ?? ERA_ITEMS[0], [selectedIndex]);
+
+  useEffect(() => {
+    onTimelineYearChange?.(selectedEra.year);
+  }, [selectedEra.year, onTimelineYearChange]);
   const selectedEraDefinition = ERA_BY_NAME[selectedEra.label] ?? {
     name: selectedEra.label,
     summary: selectedEra.label,
@@ -357,7 +363,11 @@ export default function TimelineScreen({
                   onPopupPress={() => {
                     router.push({
                       pathname: '/poi-detail',
-                      params: { id: poi.id },
+                      params: {
+                        id: poi.id,
+                        returnRoot: 'timeline',
+                        returnYear: String(selectedEra.year),
+                      },
                     });
                   }}
                   titleTop={poi.titleTop}

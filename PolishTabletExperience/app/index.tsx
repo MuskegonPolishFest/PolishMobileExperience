@@ -97,23 +97,67 @@
 //   },
 // });
 
-import React, { useState } from 'react';
+
 import TimelineScreen from '@/components/screens/timeline-screen';
 import ContentScreen from '@/screens/ContentScreen';
-import { useLocalSearchParams } from 'expo-router';
 import { EraKey } from '@/constants/contentData';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 
 type HomeView = 'timeline' | 'content';
 
+function paramFirst(value: string | string[] | undefined): string | undefined {
+	if (value == null) return undefined;
+	if (Array.isArray(value)) return value[0];
+	return value;
+}
+
 export default function IndexScreen() {
+	const router = useRouter();
+	const params = useLocalSearchParams<{
+		openTimelineAtYear?: string | string[];
+		openContentEra?: string | string[];
+	}>();
   const [view, setView] = useState<HomeView>('timeline');
   const [contentEra, setContentEra] = useState<EraKey>('all');
   const [timelineYear, setTimelineYear] = useState<number | undefined>(1918);
-	const { year } = useLocalSearchParams<{ year?: string }>();
 
-	const selectedYear = year ? Number(year) : undefined;
+	const isEraKey = (value: string): value is EraKey =>
+		[
+			'all',
+			'golden_age',
+			'wars_partitions',
+			'independence',
+			'rebirth',
+			'ww2',
+			'communist',
+			'modern',
+		].includes(value);
 
 
+
+	useEffect(() => {
+		const y = paramFirst(params.openTimelineAtYear);
+		if (y == null || y === '') return;
+		const num = Number(y);
+		if (Number.isNaN(num)) return;
+		setTimelineYear(num);
+		setView('timeline');
+		queueMicrotask(() => {
+			router.setParams({ openTimelineAtYear: undefined });
+		});
+	}, [params.openTimelineAtYear, router]);
+
+	useEffect(() => {
+		const era = paramFirst(params.openContentEra);
+		if (era == null || era === '') return;
+		if (!isEraKey(era)) return;
+		setContentEra(era);
+		setView('content');
+		queueMicrotask(() => {
+			router.setParams({ openContentEra: undefined });
+		});
+	}, [params.openContentEra, router]);
   if (view === 'content') {
     return (
       <ContentScreen
@@ -128,7 +172,8 @@ export default function IndexScreen() {
 
 	return (
 		<TimelineScreen
-		  initialYear={selectedYear}
+		  initialYear={timelineYear}
+			onTimelineYearChange={setTimelineYear}
 		  onPressContent={(era) => {
 			setContentEra(era);
 			setView('content');

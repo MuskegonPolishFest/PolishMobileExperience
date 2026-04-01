@@ -13,6 +13,18 @@ export type EraTab = {
     label: string;
 };
 
+/** Earliest timeline year used to open each era’s map (aligned with Content → Timeline). */
+export const EARLIEST_TIMELINE_YEAR_BY_ERA: Record<EraKey, number> = {
+    all: 1635,
+    golden_age: 1635,
+    wars_partitions: 1686,
+    independence: 1804,
+    rebirth: 1914,
+    ww2: 1939,
+    communist: 1948,
+    modern: 1991,
+};
+
 export type EraKeyNoAll = Exclude<EraKey, "all">;
 
 export type ContentCardItem = {
