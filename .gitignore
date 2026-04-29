@@ -1,0 +1,13 @@
+.expo/
+dist/
+web-build/
+node_modules/
+*.log
+*.lock
+*.tmp
+*.env
+*.expo
+android/
+ios/
+.env*
+.vscode/
