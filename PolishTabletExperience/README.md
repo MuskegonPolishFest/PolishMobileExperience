@@ -42,10 +42,12 @@ This ensures that:
 All content (Points of Interest, text, and images) is managed via the Sanity Studio.
 
 ### 1. Update Content in the Studio
-You can edit the content by logging into [manage.sanity.io](https://manage.sanity.io), or by running the local studio:
+The easiest way to manage content is via the deployed Studio:
+👉 **[https://mpf.sanity.studio/](https://mpf.sanity.studio/)**
+
+Alternatively, you can run the studio locally:
 ```bash
 cd studio-mpf
-npm install
 npm run dev
 ```
 
