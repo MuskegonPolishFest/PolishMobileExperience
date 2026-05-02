@@ -8,10 +8,12 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { DimensionValue } from 'react-native';
+
 type Props = {
 
-  top: number | string;
-  left: number | string;
+  top: DimensionValue;
+  left: DimensionValue;
   iconSource: any;
   imageSource: any;
   isOpen: boolean;
