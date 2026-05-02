@@ -40,7 +40,7 @@ async function sync() {
   
   // GROQ query to get all POIs with their image URLs resolved
   const query = `*[_type == "poi"] | order(yearAsc asc) {
-    id,
+    "id": id.current,
     eraKeys,
     yearLabel,
     titleTop,

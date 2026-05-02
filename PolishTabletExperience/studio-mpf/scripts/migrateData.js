@@ -37,7 +37,10 @@ async function migrate() {
     return {
       _id: `poi-${detail.id}`,
       _type: 'poi',
-      id: detail.id,
+      id: {
+        _type: 'slug',
+        current: detail.id
+      },
       eraKeys: detail.eraKeys,
       yearLabel: detail.yearLabel,
       titleTop: detail.titleTop,
