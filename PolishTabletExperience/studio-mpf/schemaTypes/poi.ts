@@ -81,6 +81,28 @@ export const poiType = defineType({
       description: 'IDs of other POIs to show in the "Related Content" section (e.g. ["c2", "c3"]).',
     }),
     defineField({
+      name: 'iconType',
+      title: 'Hotspot Icon Type',
+      type: 'string',
+      description: 'The category of this POI, determining the icon shown on the map.',
+      options: {
+        list: [
+          { title: 'Culture', value: 'culture' },
+          { title: 'Biography', value: 'biography' },
+          { title: 'History', value: 'history' },
+          { title: 'Science', value: 'science' },
+        ],
+      },
+      initialValue: 'history',
+    }),
+    defineField({
+      name: 'eraRefs',
+      title: 'Historical Era References',
+      type: 'array',
+      of: [{ type: 'reference', to: [{ type: 'era' }] }],
+      description: 'The modern way to link eras. Eventually replacing Era Keys.',
+    }),
+    defineField({
       name: 'hotspot',
       title: 'Map Hotspot Coordinates',
       type: 'object',

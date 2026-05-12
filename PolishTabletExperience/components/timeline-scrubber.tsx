@@ -21,7 +21,6 @@ type TimelineScrubberProps = {
   maxGapYears?: number;
   pixelsPerYear?: number;
   minGapPixels?: number;
-  windowSpanYears?: number;
   onSelect?: (item: TimelineItem, index: number) => void;
 };
 
@@ -63,113 +62,58 @@ export function TimelineScrubber({
   maxGapYears = 40,
   pixelsPerYear = 4.4,
   minGapPixels = 18,
-  windowSpanYears = 75,
   onSelect,
 }: TimelineScrubberProps) {
   const [containerWidth, setContainerWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(Math.min(initialIndex, Math.max(items.length - 1, 0)));
-  const [windowStartYear, setWindowStartYear] = useState(items[0]?.year ?? 0);
-  const canHandlePanRef = useRef(false);
+  const [scrollX, setScrollX] = useState(0);
+  const canHandleScrubRef = useRef(false);
+  const panStartScrollXRef = useRef(0);
 
   const positions = useMemo(
     () => buildPositions(items, pixelsPerYear, maxGapYears, minGapPixels),
     [items, maxGapYears, minGapPixels, pixelsPerYear]
   );
 
-  const minYear = items[0]?.year ?? 0;
-  const maxYear = items[items.length - 1]?.year ?? 0;
-  const maxWindowStartYear = Math.max(maxYear - windowSpanYears, minYear);
-  const visibleStartYear = windowStartYear;
-  const visibleEndYear = windowStartYear + windowSpanYears;
-
-  const visibleIndices = useMemo(() => {
-    if (items.length === 0) {
-      return [];
-    }
-
-    const indices: number[] = [];
-    for (let index = 0; index < items.length; index += 1) {
-      const year = items[index].year;
-      if (year < visibleStartYear) {
-        continue;
-      }
-      if (year > visibleEndYear) {
-        break;
-      }
-      indices.push(index);
-    }
-
-    if (indices.length === 0) {
-      let nearestIndex = 0;
-      let nearestDistance = Number.POSITIVE_INFINITY;
-      for (let index = 0; index < items.length; index += 1) {
-        const distance = Math.abs(items[index].year - visibleStartYear);
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearestIndex = index;
-        }
-      }
-      indices.push(nearestIndex);
-    }
-
-    return indices;
-  }, [items, visibleEndYear, visibleStartYear]);
-
-  const visibleStartIndex = visibleIndices[0] ?? 0;
-  const visibleEndIndex = visibleIndices[visibleIndices.length - 1] ?? 0;
+  const totalLength = positions.length > 0 ? positions[positions.length - 1] : 0;
+  const usableWidth = Math.max(containerWidth - 2 * TRACK_HORIZONTAL_PADDING, 0);
+  const maxScrollX = Math.max(totalLength - usableWidth, 0);
 
   const markerXByIndex = useMemo(() => {
     const markerMap: Record<number, number> = {};
-
-    if (visibleIndices.length === 0 || containerWidth === 0 || positions.length === 0) {
-      return markerMap;
-    }
-
-    if (visibleIndices.length === 1) {
-      markerMap[visibleIndices[0]] = containerWidth / 2;
-      return markerMap;
-    }
+    if (containerWidth === 0) return markerMap;
 
     const leftEdge = TRACK_HORIZONTAL_PADDING;
-    const rightEdge = Math.max(containerWidth - TRACK_HORIZONTAL_PADDING, leftEdge + 1);
-    const usableWidth = rightEdge - leftEdge;
-    const startPosition = positions[visibleStartIndex] ?? 0;
-    const endPosition = positions[visibleEndIndex] ?? startPosition;
-    const span = Math.max(endPosition - startPosition, 1);
+    items.forEach((_, index) => {
+      const pos = positions[index] ?? 0;
+      markerMap[index] = leftEdge + (pos - scrollX);
+    });
+    return markerMap;
+  }, [containerWidth, items, positions, scrollX]);
 
-    visibleIndices.forEach((index) => {
-      const normalized = (positions[index] - startPosition) / span;
-      markerMap[index] = leftEdge + normalized * usableWidth;
+  const visibleIndices = useMemo(() => {
+    if (items.length === 0 || containerWidth === 0) return [];
+    
+    const indices: number[] = [];
+    const buffer = 200; // Extra pixels to render off-screen
+    
+    items.forEach((_, index) => {
+      const x = markerXByIndex[index];
+      if (x >= -buffer && x <= containerWidth + buffer) {
+        indices.push(index);
+      }
     });
 
-    return markerMap;
-  }, [containerWidth, positions, visibleEndIndex, visibleIndices, visibleStartIndex]);
+    if (!indices.includes(activeIndex) && activeIndex >= 0) {
+      indices.push(activeIndex);
+      indices.sort((a, b) => a - b);
+    }
+    
+    return indices;
+  }, [items, containerWidth, markerXByIndex, activeIndex]);
 
   const activeMarkerX = markerXByIndex[activeIndex] ?? containerWidth / 2;
   const scrubberCenterX = useSharedValue(activeMarkerX);
-
-  const getNearestVisibleIndex = useCallback(
-    (touchX: number) => {
-      if (visibleIndices.length === 0) {
-        return activeIndex;
-      }
-
-      let nearest = visibleIndices[0];
-      let nearestDistance = Number.POSITIVE_INFINITY;
-
-      visibleIndices.forEach((index) => {
-        const markerX = markerXByIndex[index] ?? 0;
-        const distance = Math.abs(markerX - touchX);
-        if (distance < nearestDistance) {
-          nearestDistance = distance;
-          nearest = index;
-        }
-      });
-
-      return nearest;
-    },
-    [activeIndex, markerXByIndex, visibleIndices]
-  );
 
   const selectIndex = useCallback(
     (nextIndex: number) => {
@@ -184,40 +128,54 @@ export function TimelineScrubber({
     [items, onSelect]
   );
 
-  useEffect(() => {
-    if (items.length === 0) {
-      return;
-    }
+  const getNearestVisibleIndex = useCallback(
+    (touchX: number) => {
+      if (items.length === 0) return 0;
 
+      let nearest = 0;
+      let minDistance = Infinity;
+
+      items.forEach((_, index) => {
+        const markerX = markerXByIndex[index] ?? 0;
+        const distance = Math.abs(markerX - touchX);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearest = index;
+        }
+      });
+
+      return nearest;
+    },
+    [items, markerXByIndex]
+  );
+
+  // 1. Handle prop changes from parent (initialIndex)
+  useEffect(() => {
+    if (items.length === 0) return;
     const boundedInitial = Math.min(Math.max(initialIndex, 0), items.length - 1);
-    const initialYear = items[boundedInitial].year;
-    const initialWindowStartYear = Math.min(Math.max(initialYear, minYear), maxWindowStartYear);
+    if (activeIndex !== boundedInitial) {
+      setActiveIndex(boundedInitial);
+    }
+  }, [initialIndex, items.length]);
 
-    setActiveIndex(boundedInitial);
-    setWindowStartYear(initialWindowStartYear);
-  }, [initialIndex, items, maxWindowStartYear, minYear]);
-
+  // 2. Auto-scroll to keep activeIndex visible
   useEffect(() => {
-    const activeYear = items[activeIndex]?.year;
-    if (activeYear == null) {
-      return;
-    }
+    if (containerWidth === 0 || items.length === 0) return;
 
-    if (activeYear < windowStartYear) {
-      setWindowStartYear(Math.max(activeYear, minYear));
-      return;
-    }
+    const activePos = positions[activeIndex] ?? 0;
+    const currentViewStart = scrollX;
+    const currentViewEnd = scrollX + usableWidth;
 
-    if (activeYear > visibleEndYear) {
-      setWindowStartYear(Math.min(activeYear - windowSpanYears, maxWindowStartYear));
+    if (activePos < currentViewStart) {
+      setScrollX(Math.max(activePos, 0));
+    } else if (activePos > currentViewEnd) {
+      setScrollX(Math.min(activePos - usableWidth, maxScrollX));
     }
-  }, [activeIndex, items, maxWindowStartYear, minYear, visibleEndYear, windowSpanYears, windowStartYear]);
+  }, [activeIndex, containerWidth, items, positions, scrollX, usableWidth, maxScrollX]);
 
+  // 3. Smoothly animate the scrubber pill
   useEffect(() => {
-    if (containerWidth === 0) {
-      return;
-    }
-
+    if (containerWidth === 0) return;
     scrubberCenterX.value = withTiming(activeMarkerX, {
       duration: 180,
       easing: Easing.out(Easing.cubic),
@@ -236,34 +194,34 @@ export function TimelineScrubber({
       const withinActiveBand =
         event.y >= GESTURE_ACTIVE_TOP && event.y <= GESTURE_ACTIVE_BOTTOM;
 
-      canHandlePanRef.current = withinActiveBand;
-      if (!withinActiveBand) {
-        return;
+      if (withinActiveBand) {
+        canHandleScrubRef.current = true;
+        const nextIndex = getNearestVisibleIndex(event.x);
+        selectIndex(nextIndex);
+      } else {
+        canHandleScrubRef.current = false;
+        panStartScrollXRef.current = scrollX;
       }
-
-      const nextIndex = getNearestVisibleIndex(event.x);
-      selectIndex(nextIndex);
     })
     .onUpdate((event) => {
-      if (!canHandlePanRef.current) {
-        return;
-      }
-
-      const nextIndex = getNearestVisibleIndex(event.x);
-      if (nextIndex !== activeIndex) {
-        selectIndex(nextIndex);
+      if (canHandleScrubRef.current) {
+        const nextIndex = getNearestVisibleIndex(event.x);
+        if (nextIndex !== activeIndex) {
+          selectIndex(nextIndex);
+        }
+      } else {
+        const deltaX = event.translationX;
+        const nextScrollX = Math.min(
+          Math.max(panStartScrollXRef.current - deltaX, 0),
+          maxScrollX
+        );
+        if (Math.abs(nextScrollX - scrollX) > 0.1) {
+          setScrollX(nextScrollX);
+        }
       }
     })
-    .onEnd((event) => {
-      if (!canHandlePanRef.current) {
-        return;
-      }
-
-      const nextIndex = getNearestVisibleIndex(event.x);
-      selectIndex(nextIndex);
-    })
-    .onFinalize(() => {
-      canHandlePanRef.current = false;
+    .onEnd(() => {
+      canHandleScrubRef.current = false;
     });
 
   const onContainerLayout = (event: LayoutChangeEvent) => {
@@ -271,35 +229,19 @@ export function TimelineScrubber({
   };
 
   const goToPrevious = () => {
-    const nextWindowStart = Math.max(windowStartYear - windowSpanYears, minYear);
-    setWindowStartYear(nextWindowStart);
-
-    const nextWindowEnd = nextWindowStart + windowSpanYears;
-    const firstVisibleInWindow = items.findIndex(
-      (item) => item.year >= nextWindowStart && item.year <= nextWindowEnd
-    );
-
-    if (firstVisibleInWindow >= 0) {
-      selectIndex(firstVisibleInWindow);
+    if (activeIndex > 0) {
+      selectIndex(activeIndex - 1);
     }
   };
 
   const goToNext = () => {
-    const nextWindowStart = Math.min(windowStartYear + windowSpanYears, maxWindowStartYear);
-    setWindowStartYear(nextWindowStart);
-
-    const nextWindowEnd = nextWindowStart + windowSpanYears;
-    const firstVisibleInWindow = items.findIndex(
-      (item) => item.year >= nextWindowStart && item.year <= nextWindowEnd
-    );
-
-    if (firstVisibleInWindow >= 0) {
-      selectIndex(firstVisibleInWindow);
+    if (activeIndex < items.length - 1) {
+      selectIndex(activeIndex + 1);
     }
   };
 
-  const isPreviousDisabled = windowStartYear <= minYear;
-  const isNextDisabled = windowStartYear >= maxWindowStartYear;
+  const isPreviousDisabled = activeIndex === 0;
+  const isNextDisabled = activeIndex === items.length - 1;
 
   return (
     <View style={styles.root} onLayout={onContainerLayout}>
@@ -396,11 +338,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   gestureArea: {
-    height: 122, // increased by another 10px to match BAR_TOP move
+    height: 122,
     overflow: 'hidden',
   },
   track: {
-    height: 122, // increased by another 10px to match BAR_TOP move
+    height: 122,
   },
   trackSegment: {
     position: 'absolute',

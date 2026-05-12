@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
 import { FontFamily, MainColors } from '@/constants/theme';
-import { EraKey, POI_DETAILS } from '@/constants/contentData';
+import { EraKey, POI_DETAILS, GENERATED_ERAS, GLOBAL_MAPS, EraDefinition } from '@/constants/contentData';
 import { HOTSPOT_POSITIONS } from '@/constants/hotspotPositions';
 
 const HOME_ICON = require('@/assets/General_Icons/ Home_icon.svg');
@@ -15,119 +15,25 @@ import MapHotspot from '@/components/MapHotspot';
 import PoiButton from '../PoiButton';
 
 
-type EraDefinition = {
-  name: string;
-  summary: string;
-  timeframe: string;
-  years: number[];
-  color: string;
-  borderExplanation?: string;
-};
-
 type TimelineScreenProps = {
   onPressContent?: (era: EraKey) => void;
   onTimelineYearChange?: (year: number) => void;
   initialYear?: number;
 };
 
-const ERA_DEFINITIONS: EraDefinition[] = [
-  {
-    name: 'The Golden Age',
-    summary: 'A time of political strength, cultural flourishing, and territorial expansion.',
-    timeframe: 'Late 15th — Mid-17th Century',
-    years: [1635, 1653],
-    color: '#6E5A12',
-  },
-  {
-    name: 'The Silver Age & Era of Wars',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1686, 1699, 1701, 1713, 1721, 1742],
-    color: '#3E642B',
-  },
-  {
-    name: 'Silver Age & Era of Wars: First Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1772, 1792],
-    color: '#3E642B',
-  },
-    {
-    name: 'Silver Age & Era of Wars: Second Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1793],
-    color: '#3E642B',
-  },
-  {
-    name: 'Silver Age & Era of Wars: Third Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1795],
-    color: '#3E642B',
-  },
-  {
-    name: 'Struggle for Independence',
-    summary: 'A century of failed uprisings and growing nationalism.',
-    timeframe: '19th Century — WW1',
-    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878, 1884, 1894, 1904],
-    color: '#5E4E95',
-  },
-  {
-    name: 'Rebirth of Poland',
-    summary: 'Poland regained its independence and rebuilt itself as a sovereign state.',
-    timeframe: '1914 — 1939',
-    years: [1914, 1917, 1918, 1919, 1920, 1921, 1924, 1933, 1938],
-    color: '#6F563E',
-  },
-  {
-    name: 'World War II & Occupation',
-    summary: 'Poland was invaded and divided between Nazi Germany and the Soviet Union.',
-    timeframe: '1939 — 1945',
-    years: [1939, 1940, 1942, 1944],
-    color: '#3B6583',
-  },
-  {
-    name: 'Liberation & Reorganization',
-    summary: 'N/A',
-    timeframe: '1945 — 1948',
-    years: [1945],
-    color: '#3F6E8E',
-  },
-  {
-    name: 'Communist Poland',
-    summary: 'Communist Poland under Soviet influence.',
-    timeframe: '1948 — 1980',
-    years: [1948, 1951, 1960, 1970],
-    color: '#8B5E4A',
-  },
-    {
-    name: 'Growing Discontent',
-    summary: 'N/A',
-    timeframe: '1980 — 1989',
-    years: [1980, 1985],
-    color: '#6F5A8F',
-  },
-  {
-    name: 'Modern Poland',
-    summary: 'Where we are today: a democratic republic and member of the EU and NATO.',
-    timeframe: '1989 — Present',
-    years: [1989, 1993, 2002, 2009],
-    color: '#0F766E',
-  },
-];
-
-const ERA_ITEMS: TimelineItem[] = ERA_DEFINITIONS.flatMap((era) =>
-  era.years.map((year) => ({
-    id: `${era.name}-${year}`,
-    year,
-    label: era.name,
-    color: era.color,
-  }))
-);
+const ERA_ITEMS: TimelineItem[] = Object.values(GENERATED_ERAS)
+  .flatMap((era) =>
+    era.years.map((year) => ({
+      id: `${era.id}-${year}`,
+      year,
+      label: era.name,
+      color: era.color,
+    }))
+  )
+  .sort((a, b) => a.year - b.year);
 
 const ERA_BY_NAME = Object.fromEntries(
-  ERA_DEFINITIONS.map((era) => [era.name, era])
+  Object.values(GENERATED_ERAS).map((era) => [era.name, era])
 ) as Record<string, EraDefinition>;
 
 const DEFAULT_INDEX = Math.max(
@@ -135,150 +41,45 @@ const DEFAULT_INDEX = Math.max(
   0
 );
 
-const MAP_1635 = require('@/assets/maps_svg/1635-Realsize.svg');
-const MAP_1699 = require('@/assets/maps_svg/1699,1701,1713.svg');
-const MAP_1721 = require('@/assets/maps_svg/1721.svg');
-const MAP_1772 = require('@/assets/maps_svg/1772.svg');
-const MAP_1793 = require('@/assets/maps_svg/1793.svg');
-const MAP_1795 = require('@/assets/maps_svg/1795.svg');
-const MAP_1807 = require('@/assets/maps_svg/1807.svg');
-const MAP_1815 = require('@/assets/maps_svg/1815.svg');
-const MAP_1831 = require('@/assets/maps_svg/1831.svg');
-const MAP_1846 = require('@/assets/maps_svg/1846.svg');
-const MAP_1848 = require('@/assets/maps_svg/1848.svg');
-const MAP_1867 = require('@/assets/maps_svg/1867.svg');
-const MAP_1871 = require('@/assets/maps_svg/1871.svg');
-const MAP_1878 = require('@/assets/maps_svg/1878, 1884,1894,1904.svg');
-const MAP_1917 = require('@/assets/maps_svg/1917.svg');
-const MAP_1918 = require('@/assets/maps_svg/1918 - 5.svg');
-const MAP_1919 = require('@/assets/maps_svg/1919-1.svg');
-const MAP_1920 = require('@/assets/maps_svg/1920, 1923.svg');
-const MAP_1922 = require('@/assets/maps_svg/1922-2, 1924, 1935.svg');
-const MAP_1938 = require('@/assets/maps_svg/1938 -1.svg');
-const MAP_1939 = require('@/assets/maps_svg/1939-2.svg');
-const MAP_1940 = require('@/assets/maps_svg/1940.1942.svg');
-const MAP_1944 = require('@/assets/maps_svg/1944.svg');
-const MAP_1945 = require('@/assets/maps_svg/1945 - 5.svg');
-const MAP_1948 = require('@/assets/maps_svg/1948, 1951, 1960, 1970, 1975, 1980, 1987.svg');
-const MAP_1989 = require('@/assets/maps_svg/1989.svg');
-const MAP_1993 = require('@/assets/maps_svg/1993, 2002, 2011.svg');
-
-const RIGHT_ALIGNED_MAP_POSITION = { right: 0, top: '32%' };
 const LEFT_BACKGROUND_VECTOR = require('@/assets/maps_svg/background-vector.svg');
 
-const CULTURE_ICON = require('@/assets/POI_Icon/POI_Culture.svg');
-// const HOTSPOT_IMAGE = require('@/assets/content_images/CommunistPoland/CommunistPoland_1.png');
 const HOTSPOT_ICONS = {
   culture: require('@/assets/POI_Icon/POI_Culture.svg'),
   biography: require('@/assets/POI_Icon/POI_Biography.svg'),
-  history: require('@/assets/POI_Icon/POI_History.svg'),
+  history: require('@/assets/POI_Icon/POI_Culture.svg'), // Mapped to star per user request
   science: require('@/assets/POI_Icon/POI_Science.svg'),
 };
 
-const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
-  { startYear: 1635, source: MAP_1635 },
-  { startYear: 1686, source: MAP_1699 },
-  { startYear: 1721, source: MAP_1721 },
-  { startYear: 1772, source: MAP_1772 },
-  { startYear: 1793, source: MAP_1793 },
-  { startYear: 1795, source: MAP_1795 },
-  { startYear: 1807, source: MAP_1807 },
-  { startYear: 1815, source: MAP_1815 },
-  { startYear: 1831, source: MAP_1831 },
-  { startYear: 1846, source: MAP_1846 },
-  { startYear: 1848, source: MAP_1848 },
-  { startYear: 1867, source: MAP_1867 },
-  { startYear: 1871, source: MAP_1871 },
-  { startYear: 1878, source: MAP_1878 },
-  { startYear: 1917, source: MAP_1917 },
-  { startYear: 1918, source: MAP_1918 },
-  { startYear: 1919, source: MAP_1919 },
-  { startYear: 1920, source: MAP_1920 },
-  { startYear: 1922, source: MAP_1922 },
-  { startYear: 1938, source: MAP_1938 },
-  { startYear: 1939, source: MAP_1939 },
-  { startYear: 1940, source: MAP_1940 },
-  { startYear: 1944, source: MAP_1944 },
-  { startYear: 1945, source: MAP_1945 },
-  { startYear: 1948, source: MAP_1948 },
-  { startYear: 1989, source: MAP_1989 },
-  { startYear: 1993, source: MAP_1993 },
-];
-
-const BORDER_CHANGE_BY_YEAR: Record<number, string> = {
-  1635: 'Sweden signed the Treaty of Stuhmsdorf, returning territories to the Polish–Lithuanian Commonwealth.',
-  1653: 'Internal conflicts and wars begin, marking the decline of Poland’s strength.',
-  1686: 'Eternal Peace Treaty confirmed Russias control over Left-bank Ukraine.',
-  1699: 'Treaty of Karlowitz returned remaining Podolia to Poland.',
-  1721: 'Poland loses more control as its neighbors gain power.',
-  1742: 'Poland’s economy and military decline further.',
-  1772: 'First Partition divided 30% of Poland among Russia, Prussia, and Austria.',
-  1792: 'Poland fights Russia to protect its new constitution but loses.',
-  1793: 'Second Partition saw more land lost to Russia and Prussia.',
-  1795: 'Third Partition erased Poland from the map.',
-  1804: 'Napoleon’s rise gives Poles hope for independence.',
-  1807: 'Duchy of Warsaw created by Napoleon from former Polish lands.',
-  1815: 'Congress of Vienna split Duchy of Warsaw between Prussia and Russia.',
-  1831: 'Congress Poland lost autonomy after the November Uprising.',
-  1846: 'Free City of Cracow annexed by Austria.',
-  1848: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
-  1862: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
-  1867: 'Austria grants some autonomy to the Polish region of Galicia.',
-  1871: 'Germany is united, increasing pressure on Polish culture.',
-  1878: 'Polish nationalism and independence movements grow.',
-  1914: 'WWI begins – Poland’s land is controlled by Germany, Russia, and Austro-Hungary.',
-  1917: 'The Russian Revolution brings hope for Polish independence.',
-  1918: 'Poland declared independence and began reclaiming territory.',
-  1919: 'Treaty of Versailles recreated Poland with lands from Germany.',
-  1920: 'Poland gained Danzig access and seized East Galicia from ZUNR.',
-  1922: 'Central Lithuania joined Poland finalizing eastern borders.',
-  1938: 'Poland annexed Trans-Olza and parts of Slovak Czechoslovakia.',
-  1939: 'Germany and USSR partitioned Poland in WWII.',
-  1940: 'Poland is divided between Nazi Germany and the Soviet Union.',
-  1944: 'Warsaw Uprising – A major rebellion against German rule fails.',
-  1945: 'Post-WWII borders shifted west; eastern lands annexed by USSR.',
-  1948: 'Minor border adjustment near Przemyśl with USSR.',
-  1991: 'Communism ends – Poland becomes a democracy.',
-  1993: 'The last Soviet troops leave Poland.',
-};
-
+const BORDER_CHANGE_BY_YEAR: Record<number, string> = Object.values(GENERATED_ERAS).reduce((acc, era) => {
+  era.years.forEach(year => {
+    if (era.borderExplanation) {
+      acc[year] = era.borderExplanation;
+    }
+  });
+  return acc;
+}, {} as Record<number, string>);
 
 function getEraBackgroundMap(year: number) {
-  for (let index = MAP_BY_FLOOR_YEAR.length - 1; index >= 0; index -= 1) {
-    if (year >= MAP_BY_FLOOR_YEAR[index].startYear) {
-      return MAP_BY_FLOOR_YEAR[index].source;
+  // First check if an era has a specific map for this year
+  const eraForYear = Object.values(GENERATED_ERAS).find(era => era.years.includes(year));
+  if (eraForYear && eraForYear.mapAsset) {
+    return eraForYear.mapAsset;
+  }
+
+  // Fallback to global maps
+  for (let index = GLOBAL_MAPS.length - 1; index >= 0; index -= 1) {
+    if (year >= GLOBAL_MAPS[index].startYear) {
+      return GLOBAL_MAPS[index].source;
     }
   }
 
-  return MAP_1635;
+  return GLOBAL_MAPS[0]?.source;
 }
 
 function getEraKeyFromLabel(label: string): EraKey {
-  switch (label) {
-    case 'The Golden Age':
-      return 'golden_age';
-    case 'The Era of Wars & Partitions':
-      return 'wars_partitions';
-    case 'Struggle for Independence':
-      return 'independence';
-    case 'Rebirth of Poland':
-      return 'rebirth';
-    case 'World War II & Occupation':
-      return 'ww2';
-    case 'Communist Poland':
-      return 'communist';
-    case 'Modern Poland':
-      return 'modern';
-    default:
-      return 'all';
-  }
+  const era = Object.values(GENERATED_ERAS).find(e => e.name === label);
+  return (era?.id as EraKey) || 'all';
 }
-
-function getIndexFromYear(year: number) {
-  const foundIndex = ERA_ITEMS.findIndex((item) => item.year === year);
-  return foundIndex >= 0 ? foundIndex : DEFAULT_INDEX;
-}
-
 
 export default function TimelineScreen({
   onPressContent,
@@ -302,17 +103,32 @@ export default function TimelineScreen({
     const borderDescription =
       BORDER_CHANGE_BY_YEAR[currentItem.year];
   
-    useEffect(() => {
-      setSelectedIndex(initialIndex);
-    }, [initialIndex]);
-  
+    const lastInitialIndex = useRef(initialIndex);
 
+    useEffect(() => {
+      // Only sync if the initialIndex prop changed from the outside
+      if (initialIndex !== lastInitialIndex.current) {
+        lastInitialIndex.current = initialIndex;
+        setSelectedIndex(initialIndex);
+      }
+    }, [initialIndex]);
+
+    const handleSelect = useCallback((_: any, index: number) => {
+      setSelectedIndex(index);
+    }, []);
+  
 
   const selectedEra = useMemo(() => ERA_ITEMS[selectedIndex] ?? ERA_ITEMS[0], [selectedIndex]);
 
+  const lastReportedYear = useRef<number | null>(null);
+
   useEffect(() => {
-    onTimelineYearChange?.(selectedEra.year);
-  }, [selectedEra.year, onTimelineYearChange]);
+    if (selectedEra.year !== lastReportedYear.current) {
+      lastReportedYear.current = selectedEra.year;
+      onTimelineYearChange?.(selectedEra.year);
+    }
+  }, [selectedEra.year]);
+
   const selectedEraDefinition = ERA_BY_NAME[selectedEra.label] ?? {
     name: selectedEra.label,
     summary: selectedEra.label,
@@ -393,16 +209,12 @@ export default function TimelineScreen({
                   key={poi.id}
                   top={position.top}
                   left={position.left}
-                  iconSource={CULTURE_ICON}
-                  // iconSource={HOTSPOT_ICONS[poi.iconType]}
+                  iconSource={HOTSPOT_ICONS[poi.iconType as keyof typeof HOTSPOT_ICONS] || HOTSPOT_ICONS.history}
                   imageSource={poi.mainImage}
                   isOpen={openPoiId === poi.id}
                   onHotspotPress={() =>
                     setOpenPoiId((current) => (current === poi.id ? null : poi.id))
                   }
-                  // onPopupPress={() => {
-                  //   console.log('Open detail page for', poi.id);
-                  // }} //change this to navigate to the detail screen for the POI
                   onPopupPress={() => {
                     router.push({
                       pathname: '/poi-detail',
@@ -441,20 +253,20 @@ export default function TimelineScreen({
   
           <View style={styles.timelinePanel}>
             <TimelineScrubber
-              key={`timeline-${initialYear}`}
               items={ERA_ITEMS}
-              initialIndex={initialYear != null ? getIndexFromYear(initialYear) : DEFAULT_INDEX}
+              initialIndex={initialIndex}
               maxGapYears={40}
-              pixelsPerYear={3.8}
-              minGapPixels={20}
-              onSelect={(_, index) => setSelectedIndex(index)}
+              pixelsPerYear={8.0}
+              minGapPixels={60}
+              onSelect={handleSelect}
             />
           </View>
         </View>
       </SafeAreaView>
     </View>
   );
-              }
+}
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,

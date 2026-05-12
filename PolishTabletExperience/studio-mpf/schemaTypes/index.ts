@@ -1,3 +1,5 @@
-import {poiType} from './poi'
+import { poiType } from './poi'
+import { eraType } from './era'
+import { siteSettingsType } from './siteSettings'
 
-export const schemaTypes = [poiType]
+export const schemaTypes = [poiType, eraType, siteSettingsType]

@@ -40,10 +40,12 @@ export type PoiDetail = {
     eraKeys: EraKeyNoAll[];
     yearLabel: string;
     titleTop: string;
+    titleBottom: string;
     description: string;
     summary?: string;
     mainImage?: any;
     relatedIds: string[];
+    iconType?: string;
 };
 
 export const ERA_TABS: EraTab[] = [
@@ -57,7 +59,25 @@ export const ERA_TABS: EraTab[] = [
     { key: "modern", label: "Modern Poland" },
 ];
 
-import { POI_DETAILS as _POI_DETAILS, MOCK_CARDS as _MOCK_CARDS } from './generatedContent';
+export type EraDefinition = {
+    id: string;
+    name: string;
+    summary: string;
+    timeframe: string;
+    years: number[];
+    color: string;
+    borderExplanation?: string;
+    mapAsset?: any;
+};
+
+import { 
+    POI_DETAILS as _POI_DETAILS, 
+    MOCK_CARDS as _MOCK_CARDS,
+    GENERATED_ERAS as _GENERATED_ERAS,
+    GLOBAL_MAPS as _GLOBAL_MAPS
+} from './generatedContent';
 
 export const POI_DETAILS = _POI_DETAILS as unknown as Record<string, PoiDetail>;
 export const MOCK_CARDS = _MOCK_CARDS as unknown as ContentCardItem[];
+export const GENERATED_ERAS = _GENERATED_ERAS as unknown as Record<string, EraDefinition>;
+export const GLOBAL_MAPS = _GLOBAL_MAPS as unknown as Array<{ startYear: number; source: any }>;
