@@ -8,6 +8,7 @@ import { TimelineItem, TimelineScrubber } from '@/components/timeline-scrubber';
 import { FontFamily, MainColors } from '@/constants/theme';
 import { EraKey, POI_DETAILS } from '@/constants/contentData';
 import { HOTSPOT_POSITIONS } from '@/constants/hotspotPositions';
+import { GENERATED_ERAS } from '@/constants/generatedContent';
 
 const HOME_ICON = require('@/assets/General_Icons/ Home_icon.svg');
 
@@ -21,7 +22,7 @@ type EraDefinition = {
   timeframe: string;
   years: number[];
   color: string;
-  borderExplanation?: string;
+  borderExplanation?: string | null;
 };
 
 type TimelineScreenProps = {
@@ -30,101 +31,32 @@ type TimelineScreenProps = {
   initialYear?: number;
 };
 
-const ERA_DEFINITIONS: EraDefinition[] = [
-  {
-    name: 'The Golden Age',
-    summary: 'A time of political strength, cultural flourishing, and territorial expansion.',
-    timeframe: 'Late 15th — Mid-17th Century',
-    years: [1635, 1653],
-    color: '#6E5A12',
-  },
-  {
-    name: 'The Silver Age & Era of Wars',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1686, 1699, 1701, 1713, 1721, 1742],
-    color: '#3E642B',
-  },
-  {
-    name: 'Silver Age & Era of Wars: First Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1772, 1792],
-    color: '#3E642B',
-  },
-    {
-    name: 'Silver Age & Era of Wars: Second Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1793],
-    color: '#3E642B',
-  },
-  {
-    name: 'Silver Age & Era of Wars: Third Partition',
-    summary: 'Marked by wars, weakening government, and foreign interference.',
-    timeframe: 'Late 17th — 19th Century',
-    years: [1795],
-    color: '#3E642B',
-  },
-  {
-    name: 'Struggle for Independence',
-    summary: 'A century of failed uprisings and growing nationalism.',
-    timeframe: '19th Century — WW1',
-    years: [1804, 1807, 1815, 1831, 1846, 1848, 1862, 1867, 1871, 1878, 1884, 1894, 1904],
-    color: '#5E4E95',
-  },
-  {
-    name: 'Rebirth of Poland',
-    summary: 'Poland regained its independence and rebuilt itself as a sovereign state.',
-    timeframe: '1914 — 1939',
-    years: [1914, 1917, 1918, 1919, 1920, 1921, 1924, 1933, 1938],
-    color: '#6F563E',
-  },
-  {
-    name: 'World War II & Occupation',
-    summary: 'Poland was invaded and divided between Nazi Germany and the Soviet Union.',
-    timeframe: '1939 — 1945',
-    years: [1939, 1940, 1942, 1944],
-    color: '#3B6583',
-  },
-  {
-    name: 'Liberation & Reorganization',
-    summary: 'N/A',
-    timeframe: '1945 — 1948',
-    years: [1945],
-    color: '#3F6E8E',
-  },
-  {
-    name: 'Communist Poland',
-    summary: 'Communist Poland under Soviet influence.',
-    timeframe: '1948 — 1980',
-    years: [1948, 1951, 1960, 1970],
-    color: '#8B5E4A',
-  },
-    {
-    name: 'Growing Discontent',
-    summary: 'N/A',
-    timeframe: '1980 — 1989',
-    years: [1980, 1985],
-    color: '#6F5A8F',
-  },
-  {
-    name: 'Modern Poland',
-    summary: 'Where we are today: a democratic republic and member of the EU and NATO.',
-    timeframe: '1989 — Present',
-    years: [1989, 1993, 2002, 2009],
-    color: '#0F766E',
-  },
-];
+const ERA_DEFINITIONS: EraDefinition[] = GENERATED_ERAS.map((era) => ({
+  name: era.name,
+  summary: era.summary,
+  timeframe: era.timeframe,
+  years: era.years,
+  color: era.color,
+  borderExplanation: era.borderExplanation,
+}));
 
-const ERA_ITEMS: TimelineItem[] = ERA_DEFINITIONS.flatMap((era) =>
-  era.years.map((year) => ({
-    id: `${era.name}-${year}`,
+// We only want a single visual list item for the timeline scrubber for each year. 
+// However, since we may have multiple 'eras' in Sanity defining the same year, 
+// we collect all years across all eras into unique numbers, then create unified visual items. 
+const uniqueYearsSet = new Set<number>();
+GENERATED_ERAS.forEach(era => era.years.forEach(year => uniqueYearsSet.add(year)));
+const sortedYears = Array.from(uniqueYearsSet).sort((a, b) => a - b);
+
+const ERA_ITEMS: TimelineItem[] = sortedYears.map(year => {
+  // Find the primary era that provides color/label for this year on the scrubber
+  const eraForYear = ERA_DEFINITIONS.find(e => e.years.includes(year)) || ERA_DEFINITIONS[0];
+  return {
+    id: `${eraForYear.name}-${year}`,
     year,
-    label: era.name,
-    color: era.color,
-  }))
-);
+    label: eraForYear.name,
+    color: eraForYear.color,
+  };
+});
 
 const ERA_BY_NAME = Object.fromEntries(
   ERA_DEFINITIONS.map((era) => [era.name, era])
@@ -205,42 +137,9 @@ const MAP_BY_FLOOR_YEAR: Array<{ startYear: number; source: number }> = [
   { startYear: 1993, source: MAP_1993 },
 ];
 
-const BORDER_CHANGE_BY_YEAR: Record<number, string> = {
-  1635: 'Sweden signed the Treaty of Stuhmsdorf, returning territories to the Polish–Lithuanian Commonwealth.',
-  1653: 'Internal conflicts and wars begin, marking the decline of Poland’s strength.',
-  1686: 'Eternal Peace Treaty confirmed Russias control over Left-bank Ukraine.',
-  1699: 'Treaty of Karlowitz returned remaining Podolia to Poland.',
-  1721: 'Poland loses more control as its neighbors gain power.',
-  1742: 'Poland’s economy and military decline further.',
-  1772: 'First Partition divided 30% of Poland among Russia, Prussia, and Austria.',
-  1792: 'Poland fights Russia to protect its new constitution but loses.',
-  1793: 'Second Partition saw more land lost to Russia and Prussia.',
-  1795: 'Third Partition erased Poland from the map.',
-  1804: 'Napoleon’s rise gives Poles hope for independence.',
-  1807: 'Duchy of Warsaw created by Napoleon from former Polish lands.',
-  1815: 'Congress of Vienna split Duchy of Warsaw between Prussia and Russia.',
-  1831: 'Congress Poland lost autonomy after the November Uprising.',
-  1846: 'Free City of Cracow annexed by Austria.',
-  1848: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
-  1862: 'Eternal Peace Treaty confirmed Russia\'s control over Left-bank Ukraine.',
-  1867: 'Austria grants some autonomy to the Polish region of Galicia.',
-  1871: 'Germany is united, increasing pressure on Polish culture.',
-  1878: 'Polish nationalism and independence movements grow.',
-  1914: 'WWI begins – Poland’s land is controlled by Germany, Russia, and Austro-Hungary.',
-  1917: 'The Russian Revolution brings hope for Polish independence.',
-  1918: 'Poland declared independence and began reclaiming territory.',
-  1919: 'Treaty of Versailles recreated Poland with lands from Germany.',
-  1920: 'Poland gained Danzig access and seized East Galicia from ZUNR.',
-  1922: 'Central Lithuania joined Poland finalizing eastern borders.',
-  1938: 'Poland annexed Trans-Olza and parts of Slovak Czechoslovakia.',
-  1939: 'Germany and USSR partitioned Poland in WWII.',
-  1940: 'Poland is divided between Nazi Germany and the Soviet Union.',
-  1944: 'Warsaw Uprising – A major rebellion against German rule fails.',
-  1945: 'Post-WWII borders shifted west; eastern lands annexed by USSR.',
-  1948: 'Minor border adjustment near Przemyśl with USSR.',
-  1991: 'Communism ends – Poland becomes a democracy.',
-  1993: 'The last Soviet troops leave Poland.',
-};
+const BORDER_CHANGE_BY_YEAR: Record<number, string> = Object.fromEntries(
+  GENERATED_ERAS.flatMap(era => era.years.map(year => [year, era.borderExplanation || '']))
+) as Record<number, string>;
 
 
 function getEraBackgroundMap(year: number) {
@@ -254,24 +153,9 @@ function getEraBackgroundMap(year: number) {
 }
 
 function getEraKeyFromLabel(label: string): EraKey {
-  switch (label) {
-    case 'The Golden Age':
-      return 'golden_age';
-    case 'The Era of Wars & Partitions':
-      return 'wars_partitions';
-    case 'Struggle for Independence':
-      return 'independence';
-    case 'Rebirth of Poland':
-      return 'rebirth';
-    case 'World War II & Occupation':
-      return 'ww2';
-    case 'Communist Poland':
-      return 'communist';
-    case 'Modern Poland':
-      return 'modern';
-    default:
-      return 'all';
-  }
+  const eraMatch = GENERATED_ERAS.find(e => e.name === label);
+  if (eraMatch) return eraMatch.key;
+  return 'all';
 }
 
 function getIndexFromYear(year: number) {

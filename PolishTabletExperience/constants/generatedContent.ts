@@ -474,3 +474,189 @@ export const POI_DETAILS = GENERATED_POIS;
 export const HOTSPOT_POSITIONS = Object.fromEntries(
   Object.values(GENERATED_POIS).filter(poi => poi.hotspot).map(poi => [poi.id, poi.hotspot])
 );
+
+export const GENERATED_ERAS = [
+  {
+    "borderExplanation": null,
+    "color": "#6E5A12",
+    "key": "the-golden-age",
+    "name": "The Golden Age",
+    "summary": "A time of political strength, cultural flourishing, and territorial expansion.",
+    "timeframe": "Late 15th — Mid-17th Century",
+    "years": [
+      1635,
+      1653,
+      1670,
+      1685
+    ]
+  },
+  {
+    "borderExplanation": "Sweden signed the Treaty of Stuhmsdorf, returning territories to the Polish–Lithuanian Commonwealth. Internal conflicts and wars begin, marking the decline of Poland’s strength.",
+    "color": "#6E5A12",
+    "key": "golden_age",
+    "name": "The Golden Age",
+    "summary": "A time of political strength, cultural flourishing, and territorial expansion.",
+    "timeframe": "Late 15th — Mid-17th Century",
+    "years": [
+      1635,
+      1653
+    ]
+  },
+  {
+    "borderExplanation": "Eternal Peace Treaty confirmed Russias control over Left-bank Ukraine. Treaty of Karlowitz returned remaining Podolia to Poland. Poland loses more control as its neighbors gain power. Poland’s economy and military decline further.",
+    "color": "#3E642B",
+    "key": "wars_partitions",
+    "name": "The Silver Age & Era of Wars",
+    "summary": "Marked by wars, weakening government, and foreign interference.",
+    "timeframe": "Late 17th — 19th Century",
+    "years": [
+      1686,
+      1699,
+      1701,
+      1713,
+      1721,
+      1742
+    ]
+  },
+  {
+    "borderExplanation": "First Partition divided 30% of Poland among Russia, Prussia, and Austria. Poland fights Russia to protect its new constitution but loses.",
+    "color": "#3E642B",
+    "key": "partition_1",
+    "name": "Silver Age & Era of Wars: First Partition",
+    "summary": "Marked by wars, weakening government, and foreign interference.",
+    "timeframe": "Late 17th — 19th Century",
+    "years": [
+      1772,
+      1792
+    ]
+  },
+  {
+    "borderExplanation": "Second Partition saw more land lost to Russia and Prussia.",
+    "color": "#3E642B",
+    "key": "partition_2",
+    "name": "Silver Age & Era of Wars: Second Partition",
+    "summary": "Marked by wars, weakening government, and foreign interference.",
+    "timeframe": "Late 17th — 19th Century",
+    "years": [
+      1793
+    ]
+  },
+  {
+    "borderExplanation": "Third Partition erased Poland from the map.",
+    "color": "#3E642B",
+    "key": "partition_3",
+    "name": "Silver Age & Era of Wars: Third Partition",
+    "summary": "Marked by wars, weakening government, and foreign interference.",
+    "timeframe": "Late 17th — 19th Century",
+    "years": [
+      1795
+    ]
+  },
+  {
+    "borderExplanation": "Napoleon’s rise gives Poles hope for independence. Duchy of Warsaw created by Napoleon from former Polish lands. Congress of Vienna split Duchy of Warsaw between Prussia and Russia. Congress Poland lost autonomy after the November Uprising. Free City of Cracow annexed by Austria. Austria grants some autonomy to the Polish region of Galicia. Germany is united, increasing pressure on Polish culture. Polish nationalism and independence movements grow.",
+    "color": "#5E4E95",
+    "key": "independence",
+    "name": "Struggle for Independence",
+    "summary": "A century of failed uprisings and growing nationalism.",
+    "timeframe": "19th Century — WW1",
+    "years": [
+      1804,
+      1807,
+      1815,
+      1831,
+      1846,
+      1848,
+      1862,
+      1867,
+      1871,
+      1878,
+      1884,
+      1894,
+      1904
+    ]
+  },
+  {
+    "borderExplanation": "WWI begins – Poland’s land is controlled by Germany, Russia, and Austro-Hungary. The Russian Revolution brings hope for Polish independence. Poland declared independence and began reclaiming territory. Treaty of Versailles recreated Poland with lands from Germany. Poland gained Danzig access and seized East Galicia from ZUNR. Central Lithuania joined Poland finalizing eastern borders. Poland annexed Trans-Olza and parts of Slovak Czechoslovakia.",
+    "color": "#6F563E",
+    "key": "rebirth",
+    "name": "Rebirth of Poland",
+    "summary": "Poland regained its independence and rebuilt itself as a sovereign state.",
+    "timeframe": "1914 — 1939",
+    "years": [
+      1914,
+      1917,
+      1918,
+      1919,
+      1920,
+      1921,
+      1924,
+      1933,
+      1938
+    ]
+  },
+  {
+    "borderExplanation": "Germany and USSR partitioned Poland in WWII. Poland is divided between Nazi Germany and the Soviet Union. Warsaw Uprising – A major rebellion against German rule fails.",
+    "color": "#3B6583",
+    "key": "ww2",
+    "name": "World War II & Occupation",
+    "summary": "Poland was invaded and divided between Nazi Germany and the Soviet Union.",
+    "timeframe": "1939 — 1945",
+    "years": [
+      1939,
+      1940,
+      1942,
+      1944
+    ]
+  },
+  {
+    "borderExplanation": "Post-WWII borders shifted west; eastern lands annexed by USSR.",
+    "color": "#3F6E8E",
+    "key": "liberation",
+    "name": "Liberation & Reorganization",
+    "summary": "N/A",
+    "timeframe": "1945 — 1948",
+    "years": [
+      1945
+    ]
+  },
+  {
+    "borderExplanation": "Minor border adjustment near Przemyśl with USSR.",
+    "color": "#8B5E4A",
+    "key": "communist",
+    "name": "Communist Poland",
+    "summary": "Communist Poland under Soviet influence.",
+    "timeframe": "1948 — 1980",
+    "years": [
+      1948,
+      1951,
+      1960,
+      1970
+    ]
+  },
+  {
+    "borderExplanation": null,
+    "color": "#6F5A8F",
+    "key": "discontent",
+    "name": "Growing Discontent",
+    "summary": "N/A",
+    "timeframe": "1980 — 1989",
+    "years": [
+      1980,
+      1985
+    ]
+  },
+  {
+    "borderExplanation": "Communism ends – Poland becomes a democracy. The last Soviet troops leave Poland.",
+    "color": "#0F766E",
+    "key": "modern",
+    "name": "Modern Poland",
+    "summary": "Where we are today: a democratic republic and member of the EU and NATO.",
+    "timeframe": "1989 — Present",
+    "years": [
+      1989,
+      1993,
+      2002,
+      2009
+    ]
+  }
+];
