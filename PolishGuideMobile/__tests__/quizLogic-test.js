@@ -3,11 +3,11 @@ import { computeResult } from "../utils/quizLogic";
 describe("computeResult", () => {
   test("returns correct winner when one letter clearly wins", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "A" },
-      { questionId: "chopin", choiceKey: "B" },
-      { questionId: "polka", choiceKey: "A" },
-      { questionId: "achiever", choiceKey: "D" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "A" },
+      { questionId: "pierogi-share", choiceKey: "B" },
+      { questionId: "polka-volunteer", choiceKey: "A" },
+      { questionId: "legend", choiceKey: "D" },
     ];
 
     const result = computeResult(answers);
@@ -21,13 +21,13 @@ describe("computeResult", () => {
     });
   });
 
-  test("achiever question counts as double weight", () => {
+  test("legend question counts as double weight", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "B" },
-      { questionId: "chopin", choiceKey: "C" },
-      { questionId: "polka", choiceKey: "D" },
-      { questionId: "achiever", choiceKey: "D" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "B" },
+      { questionId: "pierogi-share", choiceKey: "C" },
+      { questionId: "polka-volunteer", choiceKey: "D" },
+      { questionId: "legend", choiceKey: "D" },
     ];
 
     const result = computeResult(answers);
@@ -41,13 +41,13 @@ describe("computeResult", () => {
     expect(result.letter).toBe("D");
   });
 
-  test("tie is broken by achiever answer", () => {
+  test("tie is broken by legend answer", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "B" },
-      { questionId: "chopin", choiceKey: "A" },
-      { questionId: "polka", choiceKey: "B" },
-      { questionId: "achiever", choiceKey: "B" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "B" },
+      { questionId: "pierogi-share", choiceKey: "A" },
+      { questionId: "polka-volunteer", choiceKey: "B" },
+      { questionId: "legend", choiceKey: "B" },
     ];
 
     const result = computeResult(answers);
@@ -57,27 +57,27 @@ describe("computeResult", () => {
 
   test("returns correct personality and guide metadata", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "C" },
-      { questionId: "kielbasa", choiceKey: "C" },
-      { questionId: "chopin", choiceKey: "A" },
-      { questionId: "polka", choiceKey: "D" },
-      { questionId: "achiever", choiceKey: "C" },
+      { questionId: "job", choiceKey: "C" },
+      { questionId: "vacation", choiceKey: "C" },
+      { questionId: "pierogi-share", choiceKey: "A" },
+      { questionId: "polka-volunteer", choiceKey: "D" },
+      { questionId: "legend", choiceKey: "C" },
     ];
 
     const result = computeResult(answers);
 
     expect(result.letter).toBe("C");
-    expect(result.personality).toBe("Engineer");
-    expect(result.guide).toBe("Crafter Guide to Rebuilding and Rebirth of Poland");
+    expect(result.personality).toBe("Crafter");
+    expect(result.guide).toBe("Rebirth of Poland");
   });
 
   test("returns all count totals correctly", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "B" },
-      { questionId: "chopin", choiceKey: "C" },
-      { questionId: "polka", choiceKey: "D" },
-      { questionId: "achiever", choiceKey: "A" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "B" },
+      { questionId: "pierogi-share", choiceKey: "C" },
+      { questionId: "polka-volunteer", choiceKey: "D" },
+      { questionId: "legend", choiceKey: "A" },
     ];
 
     const result = computeResult(answers);
@@ -90,10 +90,10 @@ describe("computeResult", () => {
     });
   });
 
-  test("falls back to A when there is a tie and achiever is not among tied letters", () => {
+  test("falls back to A when there is a tie and legend is not among tied letters", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "B" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "B" },
     ];
 
     const result = computeResult(answers);
@@ -109,11 +109,11 @@ describe("computeResult", () => {
 
   test("handles all answers being the same letter", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "D" },
-      { questionId: "kielbasa", choiceKey: "D" },
-      { questionId: "chopin", choiceKey: "D" },
-      { questionId: "polka", choiceKey: "D" },
-      { questionId: "achiever", choiceKey: "D" },
+      { questionId: "job", choiceKey: "D" },
+      { questionId: "vacation", choiceKey: "D" },
+      { questionId: "pierogi-share", choiceKey: "D" },
+      { questionId: "polka-volunteer", choiceKey: "D" },
+      { questionId: "legend", choiceKey: "D" },
     ];
 
     const result = computeResult(answers);
@@ -125,11 +125,11 @@ describe("computeResult", () => {
       D: 6,
     });
     expect(result.letter).toBe("D");
-    expect(result.personality).toBe("Adventurous");
+    expect(result.personality).toBe("Adventurer");
   });
 
-  test("handles a quiz with only the achiever answer", () => {
-    const answers = [{ questionId: "achiever", choiceKey: "B" }];
+  test("handles a quiz with only the legend answer", () => {
+    const answers = [{ questionId: "legend", choiceKey: "B" }];
 
     const result = computeResult(answers);
 
@@ -142,11 +142,11 @@ describe("computeResult", () => {
     expect(result.letter).toBe("B");
   });
 
-  test("handles a quiz with only non-achiever answers", () => {
+  test("handles a quiz with only non-legend answers", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "C" },
-      { questionId: "kielbasa", choiceKey: "C" },
-      { questionId: "chopin", choiceKey: "A" },
+      { questionId: "job", choiceKey: "C" },
+      { questionId: "vacation", choiceKey: "C" },
+      { questionId: "pierogi-share", choiceKey: "A" },
     ];
 
     const result = computeResult(answers);
@@ -160,13 +160,13 @@ describe("computeResult", () => {
     expect(result.letter).toBe("C");
   });
 
-  test("achiever can create the winning result even if another letter led before the final question", () => {
+  test("legend can create the winning result even if another letter led before the final question", () => {
     const answers = [
-      { questionId: "pierogi", choiceKey: "A" },
-      { questionId: "kielbasa", choiceKey: "A" },
-      { questionId: "chopin", choiceKey: "D" },
-      { questionId: "polka", choiceKey: "C" },
-      { questionId: "achiever", choiceKey: "D" },
+      { questionId: "job", choiceKey: "A" },
+      { questionId: "vacation", choiceKey: "A" },
+      { questionId: "pierogi-share", choiceKey: "D" },
+      { questionId: "polka-volunteer", choiceKey: "C" },
+      { questionId: "legend", choiceKey: "D" },
     ];
 
     const result = computeResult(answers);

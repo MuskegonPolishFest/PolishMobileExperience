@@ -1,112 +1,79 @@
 const TYPES = {
-  A: { personality: "Artistic", guide: "Culture Buff Guide to the Golden Era" },
-  B: { personality: "Detective", guide: "Unsung Hero Guide to the Partitions Era" },
-  C: { personality: "Engineer", guide: "Crafter Guide to Rebuilding and Rebirth of Poland" },
-  D: { personality: "Adventurous", guide: "Adventure Guide to WWII" },
+  A: { personality: "Culture Buff", guide: "Golden Age" },
+  B: { personality: "Unsung Hero", guide: "Era of Wars and Partitions" },
+  C: { personality: "Crafter", guide: "Rebirth of Poland" },
+  D: { personality: "Adventurer", guide: "World War II and Occupation" },
 };
 
 const IMAGES = {
-  pierogi: require("../assets/images/QuizPictures/Pierogi.png"),
-  kielbasa: require("../assets/images/QuizPictures/Kielbasa.png"),
-  chopin: require("../assets/images/QuizPictures/Chopin.png"),
-  polka: require("../assets/images/QuizPictures/Polka.png"),
-  achiever: require("../assets/images/QuizPictures/Flag.png"),
+  job: require("../assets/images/QuizPictures/OgrodzieniecCastle.jpg"),
+  vacation: require("../assets/images/QuizPictures/BialowiezaForest.jpg"),
+  pierogiShare: require("../assets/images/QuizPictures/PierogiShare.jpg"),
+  polka: require("../assets/images/QuizPictures/PolishPolka.jpg"),
+  legend: require("../assets/images/QuizPictures/WawalDragon.jpg"),
 };
 
 export const QUESTIONS = [
   {
-    id: "pierogi",
-    image: IMAGES.pierogi,
+    id: "job",
+    image: IMAGES.job,
     prompt:
-      "If you were offered a plate of pierogi, but weren’t told what the filling was, what would you be most likely to do?",
+      "By some miracle, you have time traveled to medieval Poland. You're in need of money, so you try to find a job. Which job are you taking?",
     options: [
-      { key: "A", text: "Pick the best-looking one and put it on your plate to eat later." },
-      { key: "B", text: "Study them carefully to try to figure it out." },
-      { key: "C", text: "Ask about the ingredients to reason out what’s inside." },
-      { key: "D", text: "Grab one and bite into it to find out." },
+      { key: "A", text: "I take a stall in the bazaar to sell traditional clothing." },
+      { key: "B", text: "I become a scribe and record the history of the time." },
+      { key: "C", text: "I emerge as a politician striving to bring progress to the realm." },
+      { key: "D", text: "I join the knighthood to slay the enemies of my kingdom." },
     ],
   },
   {
-    id: "kielbasa",
-    image: IMAGES.kielbasa,
+    id: "vacation",
+    image: IMAGES.vacation,
     prompt:
-      "A child drops their kielbasa in the dirt and starts crying. What would you be most likely to do?",
+      "You're in need of a vacation, so you decide to plan a trip with your best friends. Where are you heading?",
     options: [
+      { key: "A", text: "You head to Pomeranian Bay for a boating day." },
       {
-        key: "A",
-        text: "Comfort the child by giving them a flower piece or Polish button you just bought.",
+        key: "B",
+        text: "You decide to try out a new local restaurant and treat your friends to dinner.",
       },
-      { key: "B", text: "Find the child’s parents." },
-      {
-        key: "C",
-        text: "Get the child another kielbasa, but ask for a takeaway box so it will not drop again.",
-      },
-      {
-        key: "D",
-        text: "Give them your untouched kielbasa and act like it is no big deal.",
-      },
+      { key: "C", text: "You plan a camping trip to Bialowieza National Park." },
+      { key: "D", text: "You head to Mount Rysy and attempt a climb to the top." },
     ],
   },
   {
-    id: "chopin",
-    image: IMAGES.chopin,
+    id: "pierogi-share",
+    image: IMAGES.pierogiShare,
     prompt:
-      "If you were in the culture tent and Chopin was playing in the background, what would you be most likely to think or do?",
+      "You are lucky enough to snatch the last pierogi, but on your way out, you hear a child complaining that they weren't able to get one. What do you do?",
     options: [
-      {
-        key: "A",
-        text: "Make a mental note to find a Chopin performance in West Michigan soon.",
-      },
-      { key: "B", text: "Ask the tent guide if Chopin was Polish." },
-      { key: "C", text: "Check out the speakers." },
-      { key: "D", text: "Ask if they can play some rock instead." },
+      { key: "A", text: "You walk away and enjoy your pierogi." },
+      { key: "B", text: "You ask the child if they would like to share with you." },
+      { key: "C", text: "You split the pierogi in half and offer one half to the child." },
+      { key: "D", text: "You give the child the pierogi and try something new instead." },
     ],
   },
   {
-    id: "polka",
+    id: "polka-volunteer",
     image: IMAGES.polka,
     prompt:
-      'If a festival volunteer asked you to help demonstrate a polka called "The Chicago Hop," what would you be most likely to do?',
+      "It's time for the polka and the festival volunteers are requesting help for their demonstration. What do you do?",
     options: [
-      {
-        key: "A",
-        text: "Join in if you dance, or politely decline and mention a dance event you know about.",
-      },
-      {
-        key: "B",
-        text: "Join in if you dance, or decline and start wondering what made them ask you.",
-      },
-      {
-        key: "C",
-        text: "Ask them to explain exactly what the Chicago Hop is before deciding.",
-      },
-      {
-        key: "D",
-        text: "Jump in and give it a try either way.",
-      },
+      { key: "A", text: "Volunteer yourself because you already know the dance." },
+      { key: "B", text: "You decide to watch the dance first and join once you think you know it." },
+      { key: "C", text: "You sit quietly and wait to see if they call on you or not." },
+      { key: "D", text: "Volunteer yourself so you can learn it for the first time." },
     ],
   },
   {
-    id: "achiever",
-    image: IMAGES.achiever,
-    prompt: "Which Polish achiever do you find most interesting?",
+    id: "legend",
+    image: IMAGES.legend,
+    prompt: "Which of these Polish legends sounds most interesting to you?",
     options: [
-      {
-        key: "A",
-        text: "Vaslav Nijinsky — a groundbreaking dancer who changed modern dance.",
-      },
-      {
-        key: "B",
-        text: "Madame Curie — a two-time Nobel Prize winner born in Warsaw.",
-      },
-      {
-        key: "C",
-        text: "Copernicus — helped start the scientific revolution through math and astronomy.",
-      },
-      {
-        key: "D",
-        text: "Witold Pilecki — a resistance fighter and WWII hero.",
-      },
+      { key: "A", text: "The Dragon of Wawel Hill" },
+      { key: "B", text: "The Inspiration of the White Eagle" },
+      { key: "C", text: "The Mermaid of the Vistula River" },
+      { key: "D", text: "The Bear Who Was a Soldier" },
     ],
   },
 ];
@@ -116,7 +83,7 @@ export function computeResult(answers) {
 
   for (let i = 0; i < answers.length; i++) {
     const { questionId, choiceKey } = answers[i];
-    const isFinal = questionId === "achiever";
+    const isFinal = questionId === "legend";
     const weight = isFinal ? 2 : 1;
     counts[choiceKey] += weight;
   }
@@ -131,7 +98,7 @@ export function computeResult(answers) {
     return { letter: winner, ...TYPES[winner], counts };
   }
 
-  const finalAnswer = answers.find((a) => a.questionId === "achiever")?.choiceKey;
+  const finalAnswer = answers.find((a) => a.questionId === "legend")?.choiceKey;
 
   if (finalAnswer && tiedLetters.includes(finalAnswer)) {
     return { letter: finalAnswer, ...TYPES[finalAnswer], counts };
