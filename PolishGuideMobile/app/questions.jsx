@@ -18,12 +18,12 @@ import { QUESTIONS, computeResult } from "../utils/quizLogic";
 
 const GUIDE_ROUTE_BY_LETTER = {
   A: {
-    guideName: "The Educator",
+    guideName: "The Culture Buff",
     guideRoute: "/guides/EducatorGuide",
     color: "#9B5802",
   },
   B: {
-    guideName: "The Writer",
+    guideName: "The Unsung Hero",
     guideRoute: "/guides/WriterGuide",
     color: "#4E6CD8",
   },
@@ -33,7 +33,7 @@ const GUIDE_ROUTE_BY_LETTER = {
     color: "#2F702F",
   },
   D: {
-    guideName: "The Explorer",
+    guideName: "The Adventurer",
     guideRoute: "/guides/ExplorerGuide",
     color: "#D83F19",
   },
